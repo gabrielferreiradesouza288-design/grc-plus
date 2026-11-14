@@ -171,7 +171,8 @@ document.addEventListener("click", async (ev) => {
 const PAGINAS = {
   funil: ["Funil de atendimento", "Atendimento"],
   conversas: ["Conversas", "Atendimento"],
-  contatos: ["Contatos", "Clientes"],
+  contatos: ["Contatos", "WhatsApp"],
+  clientes: ["Clientes", "Fecharam frete"],
   painel: ["Painel", "Indicadores"],
   ajustes: ["Ajustes", "Administração"],
 };
@@ -214,9 +215,11 @@ function abrirPagina(nome) {
   $("#pagina-titulo").textContent = PAGINAS[nome][0];
   $("#pagina-sobretitulo").textContent = PAGINAS[nome][1];
   $("#periodo-caixa").hidden = !PAGINAS_DE_CONVERSAS.includes(nome);
-  $("#busca-caixa").hidden = !PAGINAS_DE_CONVERSAS.includes(nome) && nome !== "contatos";
-  $("#busca-funil").placeholder = nome === "contatos" ? "Buscar nome, número ou etiqueta" : "Buscar contato ou número";
+  $("#busca-caixa").hidden = !PAGINAS_DE_CONVERSAS.includes(nome) && nome !== "contatos" && nome !== "clientes";
+  $("#busca-funil").placeholder = nome === "contatos" ? "Buscar nome, número ou etiqueta"
+    : nome === "clientes" ? "Buscar nome, CNPJ ou pessoa de contato" : "Buscar contato ou número";
   if (nome === "contatos") carregarContatos();
+  if (nome === "clientes") carregarClientes();
   if (nome === "painel") carregarPainel();
   fecharConversa();
   foco = null;
@@ -282,6 +285,7 @@ function desenhar() {
   if (paginaVisivel("funil")) desenharFunil();
   if (paginaVisivel("conversas")) desenharLista();
   if (paginaVisivel("contatos")) desenharContatos();
+  if (paginaVisivel("clientes")) desenharClientes();
 }
 
 function buscarConversas() {
@@ -578,6 +582,12 @@ async function abrirFicha() {
     $("#ficha-resumo").append(bloco);
   }
 
+  if (pode("editar_clientes")) {
+    const botao = el("button", "botao", "Cadastrar como cliente");
+    botao.type = "button";
+    botao.addEventListener("click", () => cadastrarContatoComoCliente(c));
+    $("#ficha-conversas").append(botao);
+  }
   for (const conversa of pode("mensagens") ? conv : []) {
     const botao = el("button", "botao", "Ver conversa");
     botao.type = "button";
@@ -651,6 +661,138 @@ $("#ficha-salvar").addEventListener("click", async (ev) => {
 });
 
 $("#ficha-voltar").addEventListener("click", () => { contatoSelecionado = null; desenharContatos(); abrirFicha(); });
+
+// ---------------------------------------------------------------------------
+// Tela Clientes: cadastro manual, feito pela equipe, de quem fechou frete depois do contato
+// ---------------------------------------------------------------------------
+let clientes = [];
+let clienteSelecionado = null; // id do cliente, "novo" ou null
+let clientePreenchido = null;  // dados vindos de um contato do WhatsApp para um cadastro novo
+const CAMPOS_CLIENTE = ["nome", "documento", "endereco", "pessoa_contato", "telefone", "email", "observacoes"];
+
+async function carregarClientes() {
+  $("#cliente-novo").hidden = !pode("editar_clientes");
+  const { data, error } = await sb.from("clientes").select("*").order("nome");
+  if (error) { $("#clientes-contagem").textContent = traduzirErro(error); return; }
+  clientes = data;
+  desenharClientes();
+  abrirCliente();
+}
+
+function desenharClientes() {
+  const termo = $("#busca-funil").value.trim().toLowerCase();
+  const digitos = termo.replace(/\D/g, "");
+  const lista = !termo ? clientes : clientes.filter((c) =>
+    [c.nome, c.pessoa_contato, c.endereco, c.email].some((v) => (v ?? "").toLowerCase().includes(termo)) ||
+    (digitos && [c.documento, c.telefone].some((v) => (v ?? "").replace(/\D/g, "").includes(digitos))));
+
+  $("#clientes-contagem").textContent = lista.length === 1 ? "1 cliente" : `${lista.length} clientes`;
+  const caixa = $("#lista-clientes");
+  const rolagem = caixa.scrollTop;
+  caixa.replaceChildren();
+  if (!lista.length) caixa.append(el("p", "vazio", clientes.length ? "Nenhum cliente encontrado." : "Nenhum cliente cadastrado ainda."));
+
+  for (const c of lista) {
+    const item = el("button", "item" + (c.id === clienteSelecionado ? " ativo" : ""));
+    item.type = "button";
+    const resumo = [c.pessoa_contato, c.telefone].filter(Boolean).join(" · ") || c.documento || "Sem contato informado";
+    item.append(el("span", "avatar", iniciais(c.nome)), el("span", "nome", c.nome),
+      el("span", "hora", new Date(c.criado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })),
+      el("span", "previa", resumo));
+    item.addEventListener("click", () => { clienteSelecionado = c.id; clientePreenchido = null; desenharClientes(); abrirCliente(); });
+    caixa.append(item);
+  }
+  caixa.scrollTop = rolagem;
+}
+
+async function abrirCliente() {
+  const novo = clienteSelecionado === "novo";
+  const c = novo ? (clientePreenchido ?? {}) : clientes.find((x) => x.id === clienteSelecionado);
+  const aberto = novo || !!c;
+  $("#cliente-ficha").hidden = !aberto;
+  $("#cliente-vazio").hidden = aberto;
+  $("#pagina-clientes").classList.toggle("com-conversa", aberto);
+  if (!aberto) return;
+
+  const podeEditar = pode("editar_clientes");
+  const form = $("#form-cliente");
+  $("#cliente-titulo").textContent = novo ? "Novo cliente" : c.nome;
+  $("#cliente-subtitulo").textContent = novo ? "Preencha os dados de quem fechou frete" : `Cadastrado em ${dataCurta(c.criado_em)}`;
+  $("#cliente-avatar").textContent = novo ? "+" : iniciais(c.nome);
+  // Não sobrescreve o que a pessoa está digitando ao recarregar a lista
+  if (form.dataset.cliente !== String(clienteSelecionado)) {
+    form.reset();
+    for (const campo of CAMPOS_CLIENTE) form[campo].value = c[campo] ?? "";
+    form.dataset.cliente = String(clienteSelecionado);
+    $(".aviso", form).hidden = true;
+  }
+  for (const campo of form.elements) if ("readOnly" in campo) campo.readOnly = !podeEditar;
+  $("#cliente-botoes").hidden = !podeEditar;
+  $("#cliente-excluir").hidden = novo;
+  $("#cliente-excluir").textContent = "Excluir cliente";
+
+  if (novo && podeEditar) form.nome.focus();
+}
+
+$("#cliente-novo").addEventListener("click", () => {
+  clienteSelecionado = "novo";
+  clientePreenchido = null;
+  $("#form-cliente").dataset.cliente = "";
+  desenharClientes();
+  abrirCliente();
+});
+
+$("#cliente-voltar").addEventListener("click", () => { clienteSelecionado = null; desenharClientes(); abrirCliente(); });
+
+$("#form-cliente").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const form = ev.currentTarget;
+  const texto = (campo) => form[campo].value.trim() || null;
+  const dados = {
+    nome: form.nome.value.trim(), documento: texto("documento"), endereco: texto("endereco"),
+    pessoa_contato: texto("pessoa_contato"), telefone: texto("telefone"), email: texto("email"),
+    observacoes: form.observacoes.value.trim(),
+  };
+  if (!dados.nome) return avisar(form, "Informe o nome ou a razão social.");
+  const numeros = (dados.documento ?? "").replace(/\D/g, "");
+  if (dados.documento && numeros.length !== 14 && numeros.length !== 11) return avisar(form, "O CNPJ deve ter 14 números (ou 11, se for CPF).");
+  if (dados.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) return avisar(form, "E-mail inválido.");
+
+  comBotaoOcupado(form, async () => {
+    if (clienteSelecionado === "novo") {
+      if (clientePreenchido?.contato_id) dados.contato_id = clientePreenchido.contato_id;
+      const { data, error } = await sb.from("clientes").insert(dados).select("id").single();
+      if (error) return avisar(form, traduzirErro(error));
+      clienteSelecionado = data.id;
+      clientePreenchido = null;
+    } else {
+      const { error } = await sb.from("clientes").update(dados).eq("id", clienteSelecionado);
+      if (error) return avisar(form, traduzirErro(error));
+    }
+    form.dataset.cliente = "";
+    await carregarClientes();
+    avisar(form, "Cliente salvo.", true);
+  });
+});
+
+$("#cliente-excluir").addEventListener("click", async (ev) => {
+  const botao = ev.currentTarget;
+  if (botao.textContent !== "Confirmar exclusão") { botao.textContent = "Confirmar exclusão"; return; }
+  botao.disabled = true;
+  const { error } = await sb.from("clientes").delete().eq("id", clienteSelecionado);
+  botao.disabled = false;
+  if (error) return avisar($("#form-cliente"), traduzirErro(error));
+  clienteSelecionado = null;
+  await carregarClientes();
+});
+
+// Atalho na ficha do contato do WhatsApp: abre o cadastro de cliente já com a pessoa e o telefone
+function cadastrarContatoComoCliente(contato) {
+  clienteSelecionado = "novo";
+  clientePreenchido = { pessoa_contato: contato.nome ?? "", telefone: formatarTelefone(contato.telefone), email: contato.email ?? "", contato_id: contato.id };
+  $("#form-cliente").dataset.cliente = "";
+  abrirPagina("clientes");
+}
 
 // ---------------------------------------------------------------------------
 // Painel de indicadores
@@ -930,6 +1072,8 @@ const PERMISSOES = [
   ["mensagens", "Abrir conversas e ler as mensagens"],
   ["contatos", "Ver Contatos"],
   ["editar_contatos", "Editar etiquetas e anotações dos contatos"],
+  ["clientes", "Ver Clientes (quem fechou frete)"],
+  ["editar_clientes", "Cadastrar, alterar e excluir clientes"],
   ["painel", "Ver o Painel"],
 ];
 let usuarioEmEdicao = null; // null = criando um novo
@@ -1020,8 +1164,10 @@ $("#form-usuario").addEventListener("submit", (ev) => {
       const senha = form.senha.value;
       if (!email) return avisar(form, "Informe o e-mail.");
       if (senha.length < 8) return avisar(form, "A senha precisa ter pelo menos 8 caracteres.");
-      const { erro } = await chamarFuncao("usuarios", { acao: "criar", nome, email, senha, papel, permissoes });
+      const { data: criado, erro } = await chamarFuncao("usuarios", { acao: "criar", nome, email, senha, papel, permissoes });
       if (erro) return avisar(form, erro);
+      // Garante todas as permissões marcadas, inclusive as criadas depois da função de usuários
+      if (criado?.id) await sb.from("usuarios").update({ permissoes }).eq("id", criado.id);
     }
     fecharFormUsuario();
     await carregarUsuarios();

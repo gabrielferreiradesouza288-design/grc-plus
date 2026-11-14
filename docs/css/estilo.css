@@ -324,6 +324,22 @@ textarea::placeholder { color: var(--neutro); }
 .linha-tempo .vazio { padding-left: 0; color: var(--neutro); }
 .linha-tempo .vazio::before, .linha-tempo .vazio::after { display: none; }
 
+/* Clientes e fretes */
+.topo-lista { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--linha); min-height: 54px; }
+.contagem-texto { font-size: 12px; font-weight: 600; color: var(--mudo); }
+.cidade-uf { grid-template-columns: minmax(0, 1fr) 90px; }
+.quatro { display: grid; grid-template-columns: 150px repeat(2, minmax(0, 1fr)) 130px; gap: 12px; }
+.ficha-corpo input[type="date"] { width: 100%; padding: 10px 12px; font-size: 14px; color: var(--texto); background: var(--painel); border: 1px solid var(--linha-forte); border-radius: 6px; }
+.ficha-corpo input[type="date"]:focus { border-color: var(--ciano); outline: 1px solid var(--ciano); outline-offset: 0; }
+.ficha-corpo .botao.principal { margin-top: 0; padding: 10px 16px; }
+.ficha-corpo .botao { padding: 10px 14px; }
+.ficha-corpo input:read-only, .ficha-corpo textarea:read-only { opacity: 0.75; }
+.frete-form { padding: 14px; border: 1px solid var(--linha); border-radius: var(--raio); background: var(--painel); }
+.resumo-ficha.dois { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.linha-tempo li .remover { margin-left: 8px; background: none; border: 0; padding: 0; color: var(--mudo); font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.linha-tempo li .remover:hover { color: #f7a9ab; }
+.linha-tempo li .valor-frete { color: var(--texto); font-weight: 700; }
+
 /* Ajustes: formulário de usuário e permissões */
 .cartao-form { display: grid; gap: 16px; padding: 20px; border: 1px solid var(--linha-forte); border-radius: var(--raio); background: var(--painel); max-width: 760px; }
 .cartao-form select { height: 43px; padding: 0 10px; font-size: 14px; color: var(--texto); background: var(--painel); border: 1px solid var(--linha-forte); border-radius: 6px; }
@@ -387,6 +403,8 @@ legend { padding: 0; font-size: 12px; font-weight: 600; color: var(--texto-2); }
   .caixa .marca { margin-bottom: 32px; }
   .duas { grid-template-columns: 1fr; }
   .permissoes { grid-template-columns: 1fr; }
+  .quatro { grid-template-columns: 1fr 1fr; }
+  .lateral nav button { font-size: 10px; }
   .cartao-form { padding: 16px; }
   /* 16px evita o zoom automático do iPhone ao tocar num campo */
   input[type="email"], input[type="password"], input[type="text"], input[type="date"], textarea, select, .busca input { font-size: 16px !important; }
@@ -403,7 +421,7 @@ legend { padding: 0; font-size: 12px; font-weight: 600; color: var(--texto-2); }
 
   .lateral nav {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 8;
-    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0;
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0;
     padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
     background: rgba(14, 15, 17, 0.92); backdrop-filter: blur(14px); border-top: 1px solid var(--linha);
   }

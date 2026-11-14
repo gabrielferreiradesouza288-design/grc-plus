@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=4">
+  <link rel="stylesheet" href="css/estilo.css?v=5">
 </head>
 <body class="em-acesso">
 
@@ -142,6 +142,9 @@
         </button>
         <button type="button" data-pagina="contatos">
           <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3"/><path d="M4 16.5c.6-3 3-4.5 6-4.5s5.4 1.500 6 4.5"/></svg>Contatos
+        </button>
+        <button type="button" data-pagina="clientes">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.500 6h9.500v8H2.500zM12 8.500h3l2.500 2.500v3H12z"/><circle cx="6" cy="14.500" r="1.500"/><circle cx="14.500" cy="14.500" r="1.500"/></svg>Clientes
         </button>
         <button type="button" data-pagina="painel">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.500 16.500h13M6 13.500v-3M10 13.500v-7M14 13.500v-5"/></svg>Painel
@@ -279,6 +282,71 @@
           </div>
         </div>
       </div>
+      <div id="pagina-clientes" class="pagina entrada" hidden>
+        <div class="entrada-lista">
+          <div class="topo-lista">
+            <span class="contagem-texto" id="clientes-contagem"></span>
+            <button type="button" class="botao destaque" id="cliente-novo" hidden>+ Novo cliente</button>
+          </div>
+          <div class="itens" id="lista-clientes"></div>
+        </div>
+
+        <div class="entrada-conversa">
+          <p class="vazio-conversa" id="cliente-vazio">Selecione um cliente ou cadastre um novo.</p>
+          <div class="ficha" id="cliente-ficha" hidden>
+            <header>
+              <button type="button" class="fechar voltar" id="cliente-voltar" aria-label="Voltar para a lista">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5 7 10l5 5"/></svg>
+              </button>
+              <span class="avatar" id="cliente-avatar"></span>
+              <div class="quem">
+                <strong id="cliente-titulo"></strong>
+                <span id="cliente-subtitulo"></span>
+              </div>
+            </header>
+
+            <div class="ficha-corpo">
+              <section>
+                <h2>Dados do cliente</h2>
+                <form id="form-cliente" novalidate>
+                  <div class="duas">
+                    <label>Nome ou razão social
+                      <input type="text" name="nome" maxlength="120" autocomplete="off" required>
+                    </label>
+                    <label>CNPJ
+                      <input type="text" name="documento" maxlength="20" autocomplete="off" inputmode="numeric" placeholder="00.000.000/0000-00">
+                    </label>
+                  </div>
+                  <label>Endereço
+                    <input type="text" name="endereco" maxlength="200" autocomplete="off" placeholder="Rua, número, bairro, cidade/UF">
+                  </label>
+                  <div class="duas">
+                    <label>Pessoa de contato
+                      <input type="text" name="pessoa_contato" maxlength="80" autocomplete="off">
+                    </label>
+                    <label>Telefone / WhatsApp
+                      <input type="text" name="telefone" maxlength="20" autocomplete="off" inputmode="tel">
+                    </label>
+                  </div>
+                  <label>E-mail
+                    <input type="email" name="email" maxlength="120" autocomplete="off">
+                  </label>
+                  <label>Observações
+                    <textarea name="observacoes" rows="3" maxlength="3000"></textarea>
+                  </label>
+                  <p class="aviso" role="alert" hidden></p>
+                  <div class="linha-form" id="cliente-botoes">
+                    <button type="submit" class="botao principal">Salvar cliente</button>
+                    <button type="button" class="botao perigo" id="cliente-excluir" hidden>Excluir cliente</button>
+                  </div>
+                </form>
+              </section>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="pagina-painel" class="pagina" hidden>
         <div class="painel-topo">
           <div class="filtros" id="painel-periodos" role="group" aria-label="Período do painel">
@@ -395,6 +463,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
