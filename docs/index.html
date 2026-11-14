@@ -57,8 +57,8 @@
       </form>
 
       <p class="troca">
-        <span>Ainda não tem acesso? <button type="button" class="link" data-ir="cadastro">Criar usuário</button></span>
         <button type="button" class="link" data-ir="recuperar">Esqueci minha senha</button>
+        <span>Novos usuários são criados por um usuário mestre.</span>
       </p>
     </div>
   </main>
@@ -102,51 +102,12 @@
     </div>
   </main>
 
-  <!-- Cadastro -->
-  <main id="tela-cadastro" class="acesso" hidden>
-    <div class="caixa">
-      <div class="marca">GRC <span>+</span></div>
-      <h1>Criar usuário</h1>
-      <p class="apoio">Usuários comuns só entram depois que um usuário mestre liberar o acesso.</p>
-
-      <form id="form-cadastro" novalidate>
-        <label>Nome
-          <input type="text" name="nome" autocomplete="name" required maxlength="80">
-        </label>
-        <label>E-mail
-          <input type="email" name="email" autocomplete="username" required>
-        </label>
-        <div class="duas">
-          <label>Senha
-            <input type="password" name="senha" autocomplete="new-password" required minlength="8" placeholder="Mínimo de 8 caracteres">
-          </label>
-          <label>Repetir a senha
-            <input type="password" name="senha2" autocomplete="new-password" required minlength="8">
-          </label>
-        </div>
-
-        <label class="marcar">
-          <input type="checkbox" name="mestre" id="quer-mestre">
-          <span>Criar como <strong>usuário mestre</strong></span>
-        </label>
-        <label id="campo-senha-mestre" hidden>Senha mestre
-          <input type="password" name="senhaMestre" autocomplete="off">
-        </label>
-
-        <p class="aviso" role="alert" hidden></p>
-        <button type="submit" class="botao principal">Criar usuário</button>
-      </form>
-
-      <p class="troca">Já tem usuário? <button type="button" class="link" data-ir="login">Entrar</button></p>
-    </div>
-  </main>
-
   <!-- Aguardando liberação -->
   <main id="tela-pendente" class="acesso" hidden>
     <div class="caixa">
       <div class="marca">GRC <span>+</span></div>
-      <h1>Acesso aguardando liberação</h1>
-      <p class="apoio">Olá, <strong id="pendente-nome"></strong>. Seu usuário foi criado, mas um usuário mestre ainda precisa liberar o seu acesso.</p>
+      <h1>Acesso desativado</h1>
+      <p class="apoio">Olá, <strong id="pendente-nome"></strong>. Seu usuário está sem acesso ao CRM. Peça a um usuário mestre para reativar.</p>
 
       <form id="form-mestre" novalidate>
         <label>Tem a senha mestre? Informe para virar usuário mestre
@@ -157,7 +118,7 @@
       </form>
 
       <p class="troca">
-        <button type="button" class="link" id="pendente-atualizar">Já fui liberado</button>
+        <button type="button" class="link" id="pendente-atualizar">Já fui reativado</button>
         <span>·</span>
         <button type="button" class="link" data-acao="sair">Sair</button>
       </p>
@@ -353,9 +314,51 @@
           <h2>Usuários da equipe</h2>
           <p class="apoio" id="ajustes-aviso"></p>
         </div>
+
+        <div class="linha-form">
+          <button type="button" class="botao destaque" id="usuario-novo" hidden>+ Novo usuário</button>
+        </div>
+
+        <div class="cartao-form" id="usuario-form-caixa" hidden>
+          <h2 id="usuario-form-titulo">Novo usuário</h2>
+          <form id="form-usuario" novalidate>
+            <div class="duas">
+              <label>Nome
+                <input type="text" name="nome" maxlength="80" autocomplete="off" required>
+              </label>
+              <label>E-mail
+                <input type="email" name="email" autocomplete="off" required>
+              </label>
+            </div>
+            <div class="duas">
+              <label id="usuario-campo-senha">Senha inicial
+                <input type="text" name="senha" minlength="8" autocomplete="off" placeholder="Mínimo de 8 caracteres">
+              </label>
+              <label>Papel
+                <select name="papel">
+                  <option value="usuario">Usuário</option>
+                  <option value="mestre">Usuário mestre</option>
+                </select>
+              </label>
+            </div>
+
+            <fieldset>
+              <legend>O que este usuário pode fazer</legend>
+              <p class="apoio" id="usuario-permissoes-nota"></p>
+              <div class="permissoes" id="usuario-permissoes"></div>
+            </fieldset>
+
+            <p class="aviso" role="alert" hidden></p>
+            <div class="linha-form">
+              <button type="submit" class="botao principal">Criar usuário</button>
+              <button type="button" class="botao" id="usuario-cancelar">Cancelar</button>
+            </div>
+          </form>
+        </div>
+
         <div class="tabela-rolagem">
           <table id="tabela-usuarios">
-            <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Acesso</th><th></th></tr></thead>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Acesso</th><th>Permissões</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>

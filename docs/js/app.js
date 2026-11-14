@@ -13,7 +13,7 @@ let canalTempoReal = null;
 // ---------------------------------------------------------------------------
 // Utilidades de tela
 // ---------------------------------------------------------------------------
-const TELAS = ["carregando", "login", "cadastro", "recuperar", "nova-senha", "pendente", "app"];
+const TELAS = ["carregando", "login", "recuperar", "nova-senha", "pendente", "app"];
 // Chegou pelo link de "esqueci minha senha" do e-mail?
 let emRecuperacao = /type=recovery/.test(location.hash + location.search);
 
@@ -132,62 +132,7 @@ $("#form-nova-senha").addEventListener("submit", (ev) => {
 });
 
 // ---------------------------------------------------------------------------
-// Cadastro (com opção de usuário mestre)
-// ---------------------------------------------------------------------------
-$("#quer-mestre").addEventListener("change", (ev) => {
-  $("#campo-senha-mestre").hidden = !ev.target.checked;
-});
-
-$("#form-cadastro").addEventListener("submit", (ev) => {
-  ev.preventDefault();
-  const form = ev.currentTarget;
-  const d = Object.fromEntries(new FormData(form));
-  const querMestre = $("#quer-mestre").checked;
-
-  if (!d.nome.trim() || !d.email.trim()) return avisar(form, "Preencha o nome e o e-mail.");
-  if (d.senha.length < 8) return avisar(form, "A senha precisa ter pelo menos 8 caracteres.");
-  if (d.senha !== d.senha2) return avisar(form, "As duas senhas não são iguais.");
-  if (querMestre && !d.senhaMestre) return avisar(form, "Informe a senha mestre.");
-
-  comBotaoOcupado(form, async () => {
-    const { data, error } = await sb.auth.signUp({
-      email: d.email.trim(),
-      password: d.senha,
-      options: { data: { nome: d.nome.trim() }, emailRedirectTo: location.origin + location.pathname },
-    });
-    if (error) return avisar(form, traduzirErro(error));
-
-    // O Supabase devolve um usuário "vazio" quando o e-mail já existe
-    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-      return avisar(form, "Já existe um usuário com este e-mail.");
-    }
-
-    if (!data.session) {
-      // Confirmação de e-mail ligada: ainda não há sessão
-      form.reset();
-      $("#campo-senha-mestre").hidden = true;
-      return avisar(form, querMestre
-        ? "Usuário criado. Confirme pelo link enviado ao seu e-mail, entre e informe a senha mestre na tela seguinte."
-        : "Usuário criado. Confirme pelo link enviado ao seu e-mail e depois entre.", true);
-    }
-
-    if (querMestre) {
-      const { data: virou, error: erroMestre } = await sb.rpc("tornar_mestre", { senha_mestre: d.senhaMestre });
-      form.reset();
-      $("#campo-senha-mestre").hidden = true;
-      await rotear();
-      if (erroMestre || !virou) {
-        avisar($("#form-mestre"), erroMestre ? traduzirErro(erroMestre) : "Usuário criado, mas a senha mestre está incorreta.");
-      }
-      return;
-    }
-    form.reset();
-    await rotear();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Tela de pendente: virar mestre com a senha mestre
+// Tela de acesso desativado: quem tem a senha mestre pode virar usuário mestre
 // ---------------------------------------------------------------------------
 $("#form-mestre").addEventListener("submit", (ev) => {
   ev.preventDefault();
@@ -251,7 +196,15 @@ function abrirApp() {
   $("#usuario-avatar").textContent = iniciais(nome);
   $("#usuario-papel").textContent = perfil.papel === "mestre" ? "Usuário mestre" : "Usuário";
   mostrarTela("app");
-  abrirPagina("funil");
+  // O menu mostra só o que o usuário pode ver (Ajustes aparece para todos, com o próprio perfil)
+  let primeira = null;
+  $$(".lateral nav button").forEach((b) => {
+    const visivel = b.dataset.pagina === "ajustes" || pode(b.dataset.pagina);
+    b.hidden = !visivel;
+    if (visivel && !primeira) primeira = b.dataset.pagina;
+  });
+  document.body.classList.toggle("sem-abrir-conversas", !pode("mensagens"));
+  abrirPagina(primeira ?? "ajustes");
   iniciarTempoReal();
 }
 
@@ -442,7 +395,8 @@ function criarCard(c) {
   if (c.bot_sem_resposta && c.etapa !== "finalizado") rodape.append(el("span", "sem-resposta", "Bot sem resposta"));
   card.append(rodape);
 
-  card.addEventListener("click", () => abrirConversa(c));
+  if (pode("mensagens")) card.addEventListener("click", () => abrirConversa(c));
+  else card.disabled = true;
   return card;
 }
 
@@ -587,6 +541,9 @@ async function abrirFicha() {
   desenharEtiquetas(c);
   // Não sobrescreve o que a pessoa está digitando
   const campo = $("#ficha-anotacoes");
+  const podeEditar = pode("editar_contatos");
+  campo.readOnly = !podeEditar;
+  $("#form-etiqueta").hidden = $("#ficha-salvar").hidden = !podeEditar;
   if (campo.dataset.contato !== c.id) {
     campo.value = c.anotacoes ?? "";
     campo.dataset.contato = c.id;
@@ -621,7 +578,7 @@ async function abrirFicha() {
     $("#ficha-resumo").append(bloco);
   }
 
-  for (const conversa of conv) {
+  for (const conversa of pode("mensagens") ? conv : []) {
     const botao = el("button", "botao", "Ver conversa");
     botao.type = "button";
     botao.addEventListener("click", () => abrirConversa(conversa));
@@ -652,7 +609,8 @@ function desenharEtiquetas(c) {
     remover.type = "button";
     remover.setAttribute("aria-label", `Remover etiqueta ${e}`);
     remover.addEventListener("click", () => salvarEtiquetas(c, c.etiquetas.filter((x) => x !== e)));
-    chip.append(remover);
+    if (pode("editar_contatos")) chip.append(remover);
+    else chip.style.paddingRight = "10px";
     caixa.append(chip);
   }
 }
@@ -720,8 +678,8 @@ async function carregarPainel() {
     p_fuso: Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo",
   });
   const aviso = $("#painel-aviso");
-  aviso.hidden = !error;
-  if (error) { aviso.textContent = traduzirErro(error); return; }
+  aviso.hidden = !error && !!d;
+  if (error || !d) { aviso.textContent = error ? traduzirErro(error) : "Seu usuário não tem permissão para ver o Painel."; return; }
 
   // Cartões
   const taxa = d.atendimentos ? Math.round((d.transferidos / d.atendimentos) * 100) : 0;
@@ -844,6 +802,10 @@ async function abrirConversa(c) {
 async function carregarMensagens(rolarParaFim) {
   if (!foco?.id) return;
   const { id, caixa } = foco;
+  if (!pode("mensagens")) {
+    caixa.replaceChildren(el("p", "sem-permissao", "Seu usuário não tem permissão para abrir conversas."));
+    return;
+  }
   const { data, error } = await sb.from("mensagens")
     .select("id, autor, autor_nome, tipo, notificacao_tipo, protocolo, texto, audio_url, imagem_url, video_url, documento_url, arquivo_nome, enviada_em")
     .eq("conversa_id", id).order("enviada_em", { ascending: false }).limit(300);
@@ -959,12 +921,142 @@ $("#backup-baixar").addEventListener("click", async (ev) => {
   status.textContent = `Baixado: ${c.contatos} contatos, ${c.conversas} conversas, ${c.atendimentos} atendimentos e ${c.mensagens} mensagens.`;
 });
 
+// ---------------------------------------------------------------------------
+// Usuários e permissões (Ajustes). Só o usuário mestre cria, edita, inativa e exclui.
+// ---------------------------------------------------------------------------
+const PERMISSOES = [
+  ["funil", "Ver o Funil"],
+  ["conversas", "Ver a lista de Conversas"],
+  ["mensagens", "Abrir conversas e ler as mensagens"],
+  ["contatos", "Ver Contatos"],
+  ["editar_contatos", "Editar etiquetas e anotações dos contatos"],
+  ["painel", "Ver o Painel"],
+];
+let usuarioEmEdicao = null; // null = criando um novo
+
+// O mestre pode tudo; os demais, só o que estiver marcado. (O banco aplica a mesma regra.)
+function pode(permissao) {
+  return perfil?.papel === "mestre" || perfil?.permissoes?.[permissao] === true;
+}
+
+// Chama uma Edge Function e devolve { data, erro } com a mensagem de erro em português
+async function chamarFuncao(nome, corpo) {
+  const { data, error } = await sb.functions.invoke(nome, { body: corpo });
+  if (!error) return { data, erro: null };
+  let erro = "Não foi possível concluir. Tente de novo.";
+  try { erro = (await error.context.json()).erro ?? erro; } catch { /* resposta sem corpo */ }
+  return { data: null, erro };
+}
+
+function desenharCaixasDePermissao() {
+  const caixa = $("#usuario-permissoes");
+  if (caixa.children.length) return;
+  for (const [chave, rotulo] of PERMISSOES) {
+    const linha = el("label", "marcar");
+    const campo = Object.assign(document.createElement("input"), { type: "checkbox", name: `perm_${chave}`, defaultChecked: true });
+    linha.append(campo, el("span", "", rotulo));
+    caixa.append(linha);
+  }
+}
+
+function atualizarCaixasConformePapel() {
+  const form = $("#form-usuario");
+  const mestre = form.papel.value === "mestre";
+  $("#usuario-permissoes-nota").textContent = mestre
+    ? "Usuário mestre tem acesso a tudo e pode gerenciar usuários."
+    : "Marque o que este usuário pode fazer.";
+  $$("#usuario-permissoes input").forEach((c) => { c.disabled = mestre; });
+}
+
+function abrirFormUsuario(u) {
+  desenharCaixasDePermissao();
+  const form = $("#form-usuario");
+  form.reset();
+  usuarioEmEdicao = u?.id ?? null;
+  $("#usuario-form-titulo").textContent = u ? `Editar ${u.nome || u.email}` : "Novo usuário";
+  $("button[type=submit]", form).textContent = u ? "Salvar alterações" : "Criar usuário";
+  form.email.disabled = !!u;
+  $("#usuario-campo-senha").hidden = !!u;
+  if (u) {
+    form.nome.value = u.nome ?? "";
+    form.email.value = u.email ?? "";
+    form.papel.value = u.papel;
+    for (const [chave] of PERMISSOES) form[`perm_${chave}`].checked = u.permissoes?.[chave] === true;
+  }
+  form.papel.disabled = u?.id === perfil.id; // ninguém rebaixa a si mesmo
+  atualizarCaixasConformePapel();
+  $(".aviso", form).hidden = true;
+  $("#usuario-form-caixa").hidden = false;
+  $("#usuario-novo").hidden = true;
+  form.nome.focus();
+}
+
+function fecharFormUsuario() {
+  usuarioEmEdicao = null;
+  $("#usuario-form-caixa").hidden = true;
+  $("#usuario-novo").hidden = perfil?.papel !== "mestre";
+}
+
+$("#usuario-novo").addEventListener("click", () => abrirFormUsuario(null));
+$("#usuario-cancelar").addEventListener("click", fecharFormUsuario);
+$("#form-usuario").papel.addEventListener("change", atualizarCaixasConformePapel);
+
+$("#form-usuario").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const form = ev.currentTarget;
+  const nome = form.nome.value.trim();
+  const papel = form.papel.value === "mestre" ? "mestre" : "usuario";
+  const permissoes = Object.fromEntries(PERMISSOES.map(([chave]) => [chave, papel === "mestre" || form[`perm_${chave}`].checked]));
+  if (!nome) return avisar(form, "Informe o nome.");
+
+  comBotaoOcupado(form, async () => {
+    if (usuarioEmEdicao) {
+      const mudanca = usuarioEmEdicao === perfil.id ? { nome } : { nome, papel, permissoes };
+      const { error } = await sb.from("usuarios").update(mudanca).eq("id", usuarioEmEdicao);
+      if (error) return avisar(form, traduzirErro(error));
+      if (usuarioEmEdicao === perfil.id) { perfil.nome = nome; $("#usuario-nome").textContent = nome; $("#usuario-avatar").textContent = iniciais(nome); }
+    } else {
+      const email = form.email.value.trim();
+      const senha = form.senha.value;
+      if (!email) return avisar(form, "Informe o e-mail.");
+      if (senha.length < 8) return avisar(form, "A senha precisa ter pelo menos 8 caracteres.");
+      const { erro } = await chamarFuncao("usuarios", { acao: "criar", nome, email, senha, papel, permissoes });
+      if (erro) return avisar(form, erro);
+    }
+    fecharFormUsuario();
+    await carregarUsuarios();
+  });
+});
+
+// Excluir pede um segundo clique para confirmar
+function botaoExcluir(usuario) {
+  const botao = el("button", "botao perigo", "Excluir");
+  botao.type = "button";
+  let confirmando = null;
+  botao.addEventListener("click", async () => {
+    if (!confirmando) {
+      botao.textContent = "Confirmar exclusão";
+      confirmando = setTimeout(() => { confirmando = null; botao.textContent = "Excluir"; }, 5000);
+      return;
+    }
+    clearTimeout(confirmando);
+    botao.disabled = true;
+    botao.textContent = "Excluindo…";
+    const { erro } = await chamarFuncao("usuarios", { acao: "excluir", id: usuario.id });
+    if (usuarioEmEdicao === usuario.id) fecharFormUsuario();
+    await carregarUsuarios();
+    if (erro) $("#ajustes-aviso").textContent = erro;
+  });
+  return botao;
+}
+
 async function carregarUsuarios() {
   carregarBackups();
   const mestre = perfil.papel === "mestre";
   $("#ajustes-aviso").textContent = mestre
-    ? "Libere o acesso de quem se cadastrou e defina quem é mestre."
+    ? "Crie os usuários da equipe e defina o que cada um pode fazer."
     : "Somente usuários mestres gerenciam a equipe. Abaixo está o seu usuário.";
+  if ($("#usuario-form-caixa").hidden) $("#usuario-novo").hidden = !mestre;
 
   const { data, error } = await sb.from("usuarios").select("*").order("criado_em");
   const corpo = $("#tabela-usuarios tbody");
@@ -972,6 +1064,8 @@ async function carregarUsuarios() {
   if (error) return ($("#ajustes-aviso").textContent = traduzirErro(error));
 
   for (const u of data) {
+    const marcadas = PERMISSOES.filter(([chave]) => u.permissoes?.[chave] === true).length;
+    const resumo = u.papel === "mestre" ? "Acesso total" : marcadas === 0 ? "Nenhuma" : `${marcadas} de ${PERMISSOES.length}`;
     const linha = document.createElement("tr");
     const celula = (texto) => Object.assign(document.createElement("td"), { textContent: texto });
     const etiqueta = (texto, cor) => {
@@ -984,18 +1078,21 @@ async function carregarUsuarios() {
     const acoes = document.createElement("td");
     acoes.className = "acoes";
 
-    if (mestre && u.id !== perfil.id) {
-      acoes.append(
-        botaoUsuario(u.ativo ? "Bloquear" : "Liberar acesso", u, { ativo: !u.ativo }),
-        botaoUsuario(u.papel === "mestre" ? "Tornar usuário" : "Tornar mestre", u,
-          u.papel === "mestre" ? { papel: "usuario" } : { papel: "mestre", ativo: true }),
-      );
+    if (mestre) {
+      const editar = el("button", "botao", "Editar");
+      editar.type = "button";
+      editar.addEventListener("click", () => abrirFormUsuario(u));
+      acoes.append(editar);
+      if (u.id !== perfil.id) {
+        acoes.append(botaoUsuario(u.ativo ? "Inativar" : "Reativar", u, { ativo: !u.ativo }), botaoExcluir(u));
+      }
     }
 
     linha.append(
       celula(u.nome || "(sem nome)"), celula(u.email),
       etiqueta(u.papel === "mestre" ? "Mestre" : "Usuário", u.papel === "mestre" ? "var(--ciano)" : "var(--neutro)"),
-      etiqueta(u.ativo ? "Liberado" : "Pendente", u.ativo ? "var(--verde)" : "var(--dourado)"),
+      etiqueta(u.ativo ? "Ativo" : "Inativo", u.ativo ? "var(--verde)" : "var(--dourado)"),
+      celula(resumo),
       acoes,
     );
     corpo.append(linha);
@@ -1007,8 +1104,8 @@ function botaoUsuario(rotulo, usuario, mudanca) {
   botao.addEventListener("click", async () => {
     botao.disabled = true;
     const { error } = await sb.from("usuarios").update(mudanca).eq("id", usuario.id);
-    if (error) $("#ajustes-aviso").textContent = traduzirErro(error);
     await carregarUsuarios();
+    if (error) $("#ajustes-aviso").textContent = traduzirErro(error);
   });
   return botao;
 }
