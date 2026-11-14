@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#08090a">
   <meta name="robots" content="noindex, nofollow">
   <title>GRC + · CRM de atendimentos</title>
-  <link rel="icon" href="https://gabrielferreiradesouza288-design.github.io/grc-analytics-site/assets/grc-logo.png">
+  <link rel="icon" href="img/grc-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
   <!-- Painel da marca (aparece ao lado do login, cadastro e pendente) -->
   <aside id="painel-marca" class="painel-marca" aria-hidden="true">
     <div class="grade"></div>
-    <img class="logo" src="https://gabrielferreiradesouza288-design.github.io/grc-analytics-site/assets/grc-logo.png" alt="" onerror="this.remove()">
+    <img class="logo" src="img/grc-logo.png" alt="" onerror="this.remove()">
     <div class="chamada">
       <p class="sobretitulo"><span></span>CRM de atendimentos</p>
       <p class="titulo-marca">Cada conversa do WhatsApp, <strong>acompanhada em tempo real.</strong></p>
@@ -56,7 +56,49 @@
         <button type="submit" class="botao principal">Entrar</button>
       </form>
 
-      <p class="troca">Ainda não tem acesso? <button type="button" class="link" data-ir="cadastro">Criar usuário</button></p>
+      <p class="troca">
+        <span>Ainda não tem acesso? <button type="button" class="link" data-ir="cadastro">Criar usuário</button></span>
+        <button type="button" class="link" data-ir="recuperar">Esqueci minha senha</button>
+      </p>
+    </div>
+  </main>
+
+  <!-- Esqueci minha senha -->
+  <main id="tela-recuperar" class="acesso" hidden>
+    <div class="caixa">
+      <div class="marca">GRC <span>+</span></div>
+      <h1>Esqueci minha senha</h1>
+      <p class="apoio">Informe o e-mail do seu usuário. Enviaremos um link para você criar uma nova senha.</p>
+
+      <form id="form-recuperar" novalidate>
+        <label>E-mail
+          <input type="email" name="email" autocomplete="username" required>
+        </label>
+        <p class="aviso" role="alert" hidden></p>
+        <button type="submit" class="botao principal">Enviar link</button>
+      </form>
+
+      <p class="troca"><button type="button" class="link" data-ir="login">Voltar para o login</button></p>
+    </div>
+  </main>
+
+  <!-- Nova senha (aberta pelo link do e-mail) -->
+  <main id="tela-nova-senha" class="acesso" hidden>
+    <div class="caixa">
+      <div class="marca">GRC <span>+</span></div>
+      <h1>Criar nova senha</h1>
+      <p class="apoio">Escolha a nova senha do seu usuário.</p>
+
+      <form id="form-nova-senha" novalidate>
+        <label>Nova senha
+          <input type="password" name="senha" autocomplete="new-password" required minlength="8" placeholder="Mínimo de 8 caracteres">
+        </label>
+        <label>Repetir a nova senha
+          <input type="password" name="senha2" autocomplete="new-password" required minlength="8">
+        </label>
+        <p class="aviso" role="alert" hidden></p>
+        <button type="submit" class="botao principal">Salvar nova senha</button>
+      </form>
     </div>
   </main>
 
@@ -126,7 +168,7 @@
   <div id="tela-app" class="app" hidden>
     <aside class="lateral">
       <div class="topo-lateral">
-        <img src="https://gabrielferreiradesouza288-design.github.io/grc-analytics-site/assets/grc-logo.png" alt="" onerror="this.remove()">
+        <img src="img/grc-logo.png" alt="" onerror="this.remove()">
         <div class="marca">GRC <span>+</span></div>
       </div>
 
@@ -316,6 +358,16 @@
             <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Acesso</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
+        </div>
+
+        <div class="secao" id="secao-backup" hidden>
+          <h2>Backup dos dados</h2>
+          <p class="apoio">Todo domingo o sistema guarda uma cópia automática e mantém as 8 mais recentes. Você também pode baixar uma cópia agora para o seu computador.</p>
+          <div class="linha-form">
+            <button type="button" class="botao" id="backup-baixar">Baixar backup agora</button>
+            <span class="apoio" id="backup-status" role="status"></span>
+          </div>
+          <p class="apoio" id="backup-ultimo"></p>
         </div>
       </div>
     </section>

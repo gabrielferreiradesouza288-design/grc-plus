@@ -13,7 +13,9 @@ let canalTempoReal = null;
 // ---------------------------------------------------------------------------
 // Utilidades de tela
 // ---------------------------------------------------------------------------
-const TELAS = ["carregando", "login", "cadastro", "pendente", "app"];
+const TELAS = ["carregando", "login", "cadastro", "recuperar", "nova-senha", "pendente", "app"];
+// Chegou pelo link de "esqueci minha senha" do e-mail?
+let emRecuperacao = /type=recovery/.test(location.hash + location.search);
 
 function mostrarTela(nome) {
   for (const t of TELAS) $(`#tela-${t}`).hidden = t !== nome;
@@ -44,6 +46,8 @@ function traduzirErro(erro) {
   if (m.includes("email not confirmed")) return "Confirme seu e-mail pelo link que enviamos antes de entrar.";
   if (m.includes("already registered") || m.includes("already been registered")) return "Já existe um usuário com este e-mail.";
   if (m.includes("signups not allowed") || m.includes("signup is disabled")) return "A criação de usuários está desativada no Supabase.";
+  if (m.includes("different from the old")) return "A nova senha precisa ser diferente da anterior.";
+  if (m.includes("expired") || m.includes("invalid") && m.includes("link")) return "Este link expirou. Peça um novo em \"Esqueci minha senha\".";
   if (m.includes("password should be")) return "A senha é fraca demais. Use pelo menos 8 caracteres.";
   if (m.includes("rate limit") || m.includes("too many")) return "Muitas tentativas. Aguarde alguns minutos.";
   if (m.includes("permission denied") || m.includes("jwt")) return "Sem permissão para ver estes dados. Saia e entre novamente.";
@@ -58,6 +62,7 @@ function traduzirErro(erro) {
 async function rotear() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { perfil = null; pararTempoReal(); return mostrarTela("login"); }
+  if (emRecuperacao) return mostrarTela("nova-senha");
 
   const { data, error } = await sb.from("usuarios").select("*").eq("id", session.user.id).maybeSingle();
   if (error || !data) {
@@ -87,6 +92,41 @@ $("#form-login").addEventListener("submit", (ev) => {
     const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password: senha });
     if (error) return avisar(form, traduzirErro(error));
     form.reset();
+    await rotear();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Esqueci minha senha: pede o link por e-mail e, ao voltar pelo link, define a nova senha
+// ---------------------------------------------------------------------------
+$("#form-recuperar").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const form = ev.currentTarget;
+  const email = form.email.value.trim();
+  if (!email) return avisar(form, "Informe o e-mail.");
+
+  comBotaoOcupado(form, async () => {
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (error) return avisar(form, traduzirErro(error));
+    form.reset();
+    // Mesma resposta exista ou não o usuário, para não revelar quem tem cadastro
+    avisar(form, "Se existir um usuário com este e-mail, enviamos um link para criar a nova senha. Confira também a caixa de spam.", true);
+  });
+});
+
+$("#form-nova-senha").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const form = ev.currentTarget;
+  const { senha, senha2 } = Object.fromEntries(new FormData(form));
+  if (senha.length < 8) return avisar(form, "A senha precisa ter pelo menos 8 caracteres.");
+  if (senha !== senha2) return avisar(form, "As duas senhas não são iguais.");
+
+  comBotaoOcupado(form, async () => {
+    const { error } = await sb.auth.updateUser({ password: senha });
+    if (error) return avisar(form, traduzirErro(error));
+    form.reset();
+    emRecuperacao = false;
+    history.replaceState(null, "", location.pathname);
     await rotear();
   });
 });
@@ -888,7 +928,39 @@ function pararTempoReal() {
   selecionada = null;
 }
 
+// Backup (só usuário mestre)
+async function carregarBackups() {
+  const mestre = perfil.papel === "mestre";
+  $("#secao-backup").hidden = !mestre;
+  if (!mestre) return;
+  const { data, error } = await sb.functions.invoke("backup", { body: { acao: "listar" } });
+  const ultimo = data?.copias?.[0];
+  $("#backup-ultimo").textContent = error ? "Não foi possível consultar as cópias automáticas."
+    : ultimo ? `Última cópia automática: ${dataHora(ultimo.criado_em)} (${data.copias.length} guardada${data.copias.length === 1 ? "" : "s"}).`
+    : "Ainda não há cópia automática guardada.";
+}
+
+$("#backup-baixar").addEventListener("click", async (ev) => {
+  const botao = ev.currentTarget;
+  const status = $("#backup-status");
+  botao.disabled = true;
+  status.textContent = "Gerando a cópia…";
+  const { data, error } = await sb.functions.invoke("backup", { body: { acao: "baixar" } });
+  botao.disabled = false;
+  if (error || !data?.tabelas) { status.textContent = "Não foi possível gerar o backup. Tente de novo."; return; }
+
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
+  const link = Object.assign(document.createElement("a"), { href: url, download: `grc-plus-backup-${data.gerado_em.slice(0, 10)}.json` });
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  const c = data.contagem;
+  status.textContent = `Baixado: ${c.contatos} contatos, ${c.conversas} conversas, ${c.atendimentos} atendimentos e ${c.mensagens} mensagens.`;
+});
+
 async function carregarUsuarios() {
+  carregarBackups();
   const mestre = perfil.papel === "mestre";
   $("#ajustes-aviso").textContent = mestre
     ? "Libere o acesso de quem se cadastrou e defina quem é mestre."
@@ -945,7 +1017,8 @@ function botaoUsuario(rotulo, usuario, mudanca) {
 // Início
 // ---------------------------------------------------------------------------
 sb.auth.onAuthStateChange((evento) => {
-  if (evento === "SIGNED_OUT") { perfil = null; pararTempoReal(); mostrarTela("login"); }
+  if (evento === "SIGNED_OUT") { perfil = null; emRecuperacao = false; pararTempoReal(); mostrarTela("login"); }
+  if (evento === "PASSWORD_RECOVERY") { emRecuperacao = true; pararTempoReal(); mostrarTela("nova-senha"); }
 });
 
 rotear().catch(() => mostrarTela("login"));
