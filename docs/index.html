@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=5">
+  <link rel="stylesheet" href="css/estilo.css?v=6">
 </head>
 <body class="em-acesso">
 
@@ -228,7 +228,7 @@
               <span id="conv-etapa" class="etapa"></span>
             </header>
             <div class="mensagens" id="conv-mensagens"></div>
-            <p class="nota-gaveta">Somente leitura. As respostas são enviadas pelo GPT Maker.</p>
+            <div class="nota-gaveta"><span>Somente leitura. As respostas são enviadas pelo GPT Maker.</span><button type="button" class="botao destaque" id="conv-cadastrar" hidden>Cadastrar como cliente</button></div>
           </div>
         </div>
       </div>
@@ -458,11 +458,11 @@
         </button>
       </header>
       <div class="mensagens" id="gaveta-mensagens"></div>
-      <p class="nota-gaveta">Somente leitura. As respostas são enviadas pelo GPT Maker.</p>
+      <div class="nota-gaveta"><span>Somente leitura. As respostas são enviadas pelo GPT Maker.</span><button type="button" class="botao destaque" id="gaveta-cadastrar" hidden>Cadastrar como cliente</button></div>
     </aside>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

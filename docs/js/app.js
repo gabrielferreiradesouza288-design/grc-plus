@@ -178,12 +178,21 @@ const PAGINAS = {
 };
 
 const ETAPAS = [
-  ["novo_lead", "Novo lead", "var(--ciano)"],
+  ["convertido", "Leads convertidos", "var(--ciano)"],
   ["bot_atendendo", "Bot atendendo", "var(--verde)"],
   ["aguardando_humano", "Aguardando humano", "var(--dourado)"],
   ["humano_atendendo", "Humano atendendo", "#8ab4f8"],
   ["finalizado", "Finalizado", "var(--neutro)"],
 ];
+
+// "Convertido" = conversa finalizada de um contato que a equipe já cadastrou em Clientes.
+// Se o cliente voltar a falar, a conversa aparece de novo na etapa em que estiver.
+function ajustarEtapa(c) {
+  if (c.convertido && c.etapa === "finalizado") c.etapa = "convertido";
+  else if (c.etapa === "novo_lead") c.etapa = "bot_atendendo";
+  return c;
+}
+const encerrada = (c) => c.etapa === "finalizado" || c.etapa === "convertido";
 
 function iniciais(nome) {
   const partes = (nome ?? "").trim().split(/\s+/).filter((p) => /\p{L}/u.test(p));
@@ -268,7 +277,7 @@ let atendimentosAbertos = new Map(); // conversa_id -> atendimento em aberto
 async function carregarFunil() {
   const [c, a] = await Promise.all([
     sb.from("conversas")
-      .select("id, nome, telefone, etapa, bot_sem_resposta, nao_lidas, ultima_mensagem, ultima_mensagem_em")
+      .select("id, contato_id, nome, telefone, etapa, convertido, bot_sem_resposta, nao_lidas, ultima_mensagem, ultima_mensagem_em")
       .order("ultima_mensagem_em", { ascending: false, nullsFirst: false }),
     sb.from("atendimentos").select("conversa_id, atendente_nome, transferido_em, iniciado_em").neq("etapa", "finalizado"),
   ]);
@@ -276,7 +285,7 @@ async function carregarFunil() {
   aviso.hidden = !c.error;
   if (c.error) { aviso.textContent = traduzirErro(c.error); return; }
 
-  conversas = c.data;
+  conversas = c.data.map(ajustarEtapa);
   atendimentosAbertos = new Map((a.data ?? []).map((x) => [x.conversa_id, x]));
   desenhar();
 }
@@ -359,10 +368,10 @@ function desenharIndicadores() {
   const hoje = new Date().toDateString();
   const conta = (teste) => conversas.filter(teste).length;
   const dados = [
-    ["Em atendimento", conta((c) => c.etapa !== "finalizado")],
+    ["Em atendimento", conta((c) => !encerrada(c))],
     ["Aguardando humano", conta((c) => c.etapa === "aguardando_humano"), true],
-    ["Finalizadas hoje", conta((c) => c.etapa === "finalizado" && c.ultima_mensagem_em && new Date(c.ultima_mensagem_em).toDateString() === hoje)],
-    ["Mensagens não lidas", conversas.reduce((s, c) => s + (c.etapa === "finalizado" ? 0 : c.nao_lidas ?? 0), 0)],
+    ["Finalizadas hoje", conta((c) => encerrada(c) && c.ultima_mensagem_em && new Date(c.ultima_mensagem_em).toDateString() === hoje)],
+    ["Mensagens não lidas", conversas.reduce((s, c) => s + (encerrada(c) ? 0 : c.nao_lidas ?? 0), 0)],
   ];
   const caixa = $("#indicadores");
   caixa.replaceChildren();
@@ -381,7 +390,7 @@ function criarCard(c) {
   const titulo = c.nome || formatarTelefone(c.telefone) || "Sem nome";
   const nome = el("div", "nome");
   nome.append(el("b", "", titulo));
-  if (c.nao_lidas > 0 && c.etapa !== "finalizado") nome.append(el("span", "nao-lidas", String(c.nao_lidas)));
+  if (c.nao_lidas > 0 && !encerrada(c)) nome.append(el("span", "nao-lidas", String(c.nao_lidas)));
   card.append(el("span", "avatar", iniciais(c.nome)), nome);
 
   const atendimento = atendimentosAbertos.get(c.id);
@@ -396,7 +405,7 @@ function criarCard(c) {
   const rodape = el("div", "rodape");
   rodape.append(el("span", "", aguardando ? `Esperando ${tempo === "agora" ? "há instantes" : "há " + tempo}`
     : tempo === "agora" ? "Agora" : `Há ${tempo}`));
-  if (c.bot_sem_resposta && c.etapa !== "finalizado") rodape.append(el("span", "sem-resposta", "Bot sem resposta"));
+  if (c.bot_sem_resposta && !encerrada(c)) rodape.append(el("span", "sem-resposta", "Bot sem resposta"));
   card.append(rodape);
 
   if (pode("mensagens")) card.addEventListener("click", () => abrirConversa(c));
@@ -413,9 +422,9 @@ setInterval(() => { if (perfil?.ativo) desenhar(); }, 30000);
 // ---------------------------------------------------------------------------
 const FILTROS = {
   todas: () => true,
-  abertas: (c) => c.etapa !== "finalizado",
+  abertas: (c) => !encerrada(c),
   aguardando: (c) => c.etapa === "aguardando_humano",
-  finalizadas: (c) => c.etapa === "finalizado",
+  finalizadas: (c) => encerrada(c),
 };
 
 function desenharLista() {
@@ -439,7 +448,7 @@ function desenharLista() {
     const previa = aguardando ? "Aguardando atendimento humano" : (c.ultima_mensagem || formatarTelefone(c.telefone));
     item.append(avatar, el("span", "nome", c.nome || formatarTelefone(c.telefone) || "Sem nome"), el("span", "hora", tempo),
       el("span", "previa", previa));
-    if (c.nao_lidas > 0 && c.etapa !== "finalizado") item.append(el("span", "nao-lidas", String(c.nao_lidas)));
+    if (c.nao_lidas > 0 && !encerrada(c)) item.append(el("span", "nao-lidas", String(c.nao_lidas)));
     item.addEventListener("click", () => { selecionada = c.id; focarSelecionada(true); desenharLista(); });
     caixa.append(item);
   }
@@ -459,6 +468,13 @@ function preencherCabecalhoSelecionada() {
   $("#conv-avatar").textContent = iniciais(c.nome);
   $("#conv-etapa").textContent = etapa?.[1] ?? "";
   $("#conv-etapa").style.setProperty("--cor", etapa?.[2] ?? "var(--neutro)");
+  prepararBotaoCadastrar($("#conv-cadastrar"), c);
+}
+
+// Botão "Cadastrar como cliente" na conversa: aparece para quem pode cadastrar e só se ainda não for cliente
+function prepararBotaoCadastrar(botao, c) {
+  botao.hidden = !(pode("editar_clientes") && c.contato_id && !c.convertido);
+  botao.onclick = () => cadastrarContatoComoCliente({ id: c.contato_id, nome: c.nome, telefone: c.telefone });
 }
 
 function focarSelecionada(rolarParaFim) {
@@ -562,14 +578,14 @@ async function abrirFicha() {
   const [a, cv] = await Promise.all([
     sb.from("atendimentos").select("id, protocolo, etapa, atendente_nome, iniciado_em, transferido_em, finalizado_em")
       .eq("contato_id", c.id).order("iniciado_em", { ascending: false }),
-    sb.from("conversas").select("id, nome, telefone, etapa, iniciada_em, ultima_mensagem_em").eq("contato_id", c.id),
+    sb.from("conversas").select("id, contato_id, nome, telefone, etapa, convertido, iniciada_em, ultima_mensagem_em").eq("contato_id", c.id),
   ]);
   if (contatoSelecionado !== c.id) return; // já escolheu outro contato
   linha.replaceChildren();
   if (a.error) return linha.append(el("li", "vazio", traduzirErro(a.error)));
 
   const atend = a.data;
-  const conv = cv.data ?? [];
+  const conv = (cv.data ?? []).map(ajustarEtapa);
   const primeiro = [...atend.map((x) => x.iniciado_em), ...conv.map((x) => x.iniciada_em)].filter(Boolean).sort()[0];
   const ultimo = conv.map((x) => x.ultima_mensagem_em).filter(Boolean).sort().pop();
   for (const [rotulo, valor] of [
@@ -935,6 +951,7 @@ async function abrirConversa(c) {
   tag.textContent = etapa?.[1] ?? "";
   tag.style.setProperty("--cor", etapa?.[2] ?? "var(--neutro)");
   $("#gaveta-avatar").textContent = iniciais(c.nome);
+  prepararBotaoCadastrar($("#gaveta-cadastrar"), c);
   $("#gaveta-mensagens").replaceChildren(el("p", "apoio", "Carregando…"));
   $("#gaveta").hidden = $("#gaveta-fundo").hidden = false;
   $("#gaveta-fechar").focus();
