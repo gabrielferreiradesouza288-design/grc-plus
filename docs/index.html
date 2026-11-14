@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08090a">
+  <meta name="robots" content="noindex, nofollow">
+  <title>GRC + · CRM de atendimentos</title>
+  <link rel="icon" href="https://gabrielferreiradesouza288-design.github.io/grc-analytics-site/assets/grc-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="em-acesso">
+
+  <!-- Painel da marca (aparece ao lado do login, cadastro e pendente) -->
+  <aside id="painel-marca" class="painel-marca" aria-hidden="true">
+    <div class="grade"></div>
+    <img class="logo" src="https://gabrielferreiradesouza288-design.github.io/grc-analytics-site/assets/grc-logo.png" alt="" onerror="this.remove()">
+    <div class="chamada">
+      <p class="sobretitulo"><span></span>CRM de atendimentos</p>
+      <p class="titulo-marca">Cada conversa do WhatsApp, <strong>acompanhada em tempo real.</strong></p>
+      <ul>
+        <li><b>01</b>Funil ao vivo, do primeiro contato ao encerramento</li>
+        <li><b>02</b>Alerta imediato de quem aguarda um atendente</li>
+        <li><b>03</b>Histórico completo de cada cliente</li>
+      </ul>
+    </div>
+    <p class="rodape-marca">GRC Analytics · Acesso restrito à equipe</p>
+  </aside>
+
+  <!-- Carregando -->
+  <main id="tela-carregando" class="acesso">
+    <div class="caixa">
+      <div class="marca">GRC <span>+</span></div>
+      <p class="apoio">Carregando…</p>
+    </div>
+  </main>
+
+  <!-- Login -->
+  <main id="tela-login" class="acesso" hidden>
+    <div class="caixa">
+      <div class="marca">GRC <span>+</span></div>
+      <h1>Entrar</h1>
+      <p class="apoio">Use o e-mail e a senha do seu usuário.</p>
+
+      <form id="form-login" novalidate>
+        <label>E-mail
+          <input type="email" name="email" autocomplete="username" required>
+        </label>
+        <label>Senha
+          <input type="password" name="senha" autocomplete="current-password" required>
+        </label>
+        <p class="aviso" role="alert" hidden></p>
+        <button type="submit" class="botao principal">Entrar</button>
+      </form>
+
+      <p class="troca">Ainda não tem acesso? <button type="button" class="link" data-ir="cadastro">Criar usuário</button></p>
+    </div>
+  </main>
+
+  <!-- Cadastro -->
+  <main id="tela-cadastro" class="acesso" hidden>
+    <div class="caixa">
+      <div class="marca">GRC <span>+</span></div>
+      <h1>Criar usuário</h1>
+      <p class="apoio">Usuários comuns só entram depois que um usuário mestre liberar o acesso.</p>
+
+      <form id="form-cadastro" novalidate>
+        <label>Nome
+          <input type="text" name="nome" autocomplete="name" required maxlength="80">
+        </label>
+        <label>E-mail
+          <input type="email" name="email" autocomplete="username" required>
+        </label>
+        <div class="duas">
+          <label>Senha
+            <input type="password" name="senha" autocomplete="new-password" required minlength="8" placeholder="Mínimo de 8 caracteres">
+          </label>
+          <label>Repetir a senha
+            <input type="password" name="senha2" autocomplete="new-password" required minlength="8">
+          </label>
+        </div>
+
+        <label class="marcar">
+          <input type="checkbox" name="mestre" id="quer-mestre">
+          <span>Criar como <strong>usuário mestre</strong></span>
+        </label>
+        <label id="campo-senha-mestre" hidden>Senha mestre
+          <input type="password" name="senhaMestre" autocomplete="off">
+        </label>
+
+        <p class="aviso" role="alert" hidden></p>
+        <button type="submit" class="botao principal">Criar usuário</button>
+      </form>
+
+      <p class="troca">Já tem usuário? <button type="button" class="link" data-ir="login">Entrar</button></p>
+    </div>
+  </main>
+
+  <!-- Aguardando liberação -->
+  <main id="tela-pendente" class="acesso" hidden>
+    <div class="caixa">
+      <div class="marca">GRC <span>+</span></div>
+      <h1>Acesso aguardando liberação</h1>
+      <p class="apoio">Olá, <strong id="pendente-nome"></strong>. Seu usuário foi criado, mas um usuário mestre ainda precisa liberar o seu acesso.</p>
+
+      <form id="form-mestre" novalidate>
+        <label>Tem a senha mestre? Informe para virar usuário mestre
+          <input type="password" name="senhaMestre" autocomplete="off" required>
+        </label>
+        <p class="aviso" role="alert" hidden></p>
+        <button type="submit" class="botao principal">Virar usuário mestre</button>
+      </form>
+
+      <p class="troca">
+        <button type="button" class="link" id="pendente-atualizar">Já fui liberado</button>
+        <span>·</span>
+        <button type="button" class="link" data-acao="sair">Sair</button>
+      </p>
+    </div>
+  </main>
+
+  <!-- CRM -->
+  <div id="tela-app" class="app" hidden>
+    <aside class="lateral">
+      <div class="topo-lateral">
+        <img src="https://gabrielferreiradesouza288-design.github.io/grc-analytics-site/assets/grc-logo.png" alt="" onerror="this.remove()">
+        <div class="marca">GRC <span>+</span></div>
+      </div>
+
+      <nav aria-label="Seções">
+        <button type="button" data-pagina="funil" class="ativo">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 4h3v12h-3zM8.5 4h3v8h-3zM13.5 4h3v5h-3z"/></svg>Funil
+        </button>
+        <button type="button" data-pagina="conversas">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4.5h12v8.5H9l-3.5 3v-3H4z"/></svg>Conversas
+        </button>
+        <button type="button" data-pagina="contatos">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="7" r="3"/><path d="M4 16.5c.6-3 3-4.5 6-4.5s5.4 1.500 6 4.5"/></svg>Contatos
+        </button>
+        <button type="button" data-pagina="painel">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.500 16.500h13M6 13.500v-3M10 13.500v-7M14 13.500v-5"/></svg>Painel
+        </button>
+        <button type="button" data-pagina="ajustes">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.500 6h7M14 6h2.500M3.500 14h2.500M9.500 14h7"/><circle cx="12" cy="6" r="1.800"/><circle cx="7.500" cy="14" r="1.800"/></svg>Ajustes
+        </button>
+      </nav>
+
+      <div class="usuario">
+        <span class="avatar" id="usuario-avatar"></span>
+        <div class="quem">
+          <strong id="usuario-nome"></strong>
+          <span id="usuario-papel"></span>
+        </div>
+        <button type="button" class="sair" data-acao="sair" title="Sair" aria-label="Sair">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4H4.500v12H8M12.500 6.500 16 10l-3.500 3.500M16 10H8"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <section class="conteudo">
+      <header class="barra">
+        <div>
+          <p class="sobretitulo"><span></span><span id="pagina-sobretitulo">Atendimento</span></p>
+          <h1 id="pagina-titulo">Funil de atendimento</h1>
+        </div>
+        <div class="barra-acoes">
+          <span class="ao-vivo" id="ao-vivo" title="Conexão em tempo real com o banco"><i></i><span>Conectando</span></span>
+          <div class="periodo" id="periodo-caixa">
+            <select id="filtro-periodo" aria-label="Filtrar por data da última mensagem">
+              <option value="tudo">Todo o período</option>
+              <option value="hoje">Hoje</option>
+              <option value="ontem">Ontem</option>
+              <option value="7">Últimos 7 dias</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="datas">Escolher datas…</option>
+            </select>
+            <span class="datas" id="periodo-datas" hidden>
+              <input type="date" id="periodo-de" aria-label="Data inicial">
+              <span>até</span>
+              <input type="date" id="periodo-ate" aria-label="Data final">
+            </span>
+          </div>
+          <label class="busca" id="busca-caixa">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5"/><path d="m13 13 3.500 3.500"/></svg>
+            <input type="search" id="busca-funil" placeholder="Buscar contato ou número" aria-label="Buscar contato ou número">
+          </label>
+        </div>
+      </header>
+
+      <div id="pagina-funil" class="pagina">
+        <div class="indicadores" id="indicadores"></div>
+        <p class="apoio" id="funil-aviso" hidden></p>
+        <div class="funil" id="funil"></div>
+      </div>
+
+      <div id="pagina-conversas" class="pagina entrada" hidden>
+        <div class="entrada-lista">
+          <div class="filtros" id="filtros-conversas" role="group" aria-label="Filtrar conversas">
+            <button type="button" data-filtro="todas" class="ativo">Todas</button>
+            <button type="button" data-filtro="abertas">Em aberto</button>
+            <button type="button" data-filtro="aguardando">Aguardando</button>
+            <button type="button" data-filtro="finalizadas">Finalizadas</button>
+          </div>
+          <div class="itens" id="lista-conversas"></div>
+        </div>
+
+        <div class="entrada-conversa">
+          <p class="vazio-conversa" id="conv-vazio">Selecione uma conversa para ver o histórico.</p>
+          <div class="conversa" id="conv-painel" hidden>
+            <header>
+              <button type="button" class="fechar voltar" id="conv-voltar" aria-label="Voltar para a lista">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5 7 10l5 5"/></svg>
+              </button>
+              <span class="avatar" id="conv-avatar"></span>
+              <div class="quem">
+                <strong id="conv-nome"></strong>
+                <span id="conv-telefone"></span>
+              </div>
+              <span id="conv-etapa" class="etapa"></span>
+            </header>
+            <div class="mensagens" id="conv-mensagens"></div>
+            <p class="nota-gaveta">Somente leitura. As respostas são enviadas pelo GPT Maker.</p>
+          </div>
+        </div>
+      </div>
+      <div id="pagina-contatos" class="pagina entrada" hidden>
+        <div class="entrada-lista">
+          <p class="contagem" id="contatos-contagem"></p>
+          <div class="itens" id="lista-contatos"></div>
+        </div>
+
+        <div class="entrada-conversa">
+          <p class="vazio-conversa" id="ficha-vazio">Selecione um contato para ver a ficha.</p>
+          <div class="ficha" id="ficha" hidden>
+            <header>
+              <button type="button" class="fechar voltar" id="ficha-voltar" aria-label="Voltar para a lista">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5 7 10l5 5"/></svg>
+              </button>
+              <span class="avatar" id="ficha-avatar"></span>
+              <div class="quem">
+                <strong id="ficha-nome"></strong>
+                <span id="ficha-contato"></span>
+              </div>
+              <div class="ficha-acoes" id="ficha-conversas"></div>
+            </header>
+
+            <div class="ficha-corpo">
+              <div class="resumo-ficha" id="ficha-resumo"></div>
+
+              <section>
+                <h2>Etiquetas</h2>
+                <div class="etiquetas" id="ficha-etiquetas"></div>
+                <form id="form-etiqueta" class="linha-form" novalidate>
+                  <input type="text" name="etiqueta" maxlength="30" placeholder="Nova etiqueta (ex.: Power BI, Orçamento)" aria-label="Nova etiqueta">
+                  <button type="submit" class="botao">Adicionar</button>
+                </form>
+              </section>
+
+              <section>
+                <h2>Anotações internas</h2>
+                <textarea id="ficha-anotacoes" rows="5" maxlength="5000" placeholder="Só a equipe vê estas anotações." aria-label="Anotações internas"></textarea>
+                <div class="linha-form">
+                  <button type="button" class="botao" id="ficha-salvar">Salvar anotações</button>
+                  <span class="apoio" id="ficha-status" role="status"></span>
+                </div>
+              </section>
+
+              <section>
+                <h2>Linha do tempo</h2>
+                <ol class="linha-tempo" id="ficha-linha-tempo"></ol>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="pagina-painel" class="pagina" hidden>
+        <div class="painel-topo">
+          <div class="filtros" id="painel-periodos" role="group" aria-label="Período do painel">
+            <button type="button" data-dias="7">7 dias</button>
+            <button type="button" data-dias="30" class="ativo">30 dias</button>
+            <button type="button" data-dias="90">90 dias</button>
+          </div>
+          <span class="apoio" id="painel-intervalo"></span>
+        </div>
+        <p class="apoio" id="painel-aviso" hidden></p>
+
+        <div class="tiles" id="painel-tiles"></div>
+
+        <div class="graficos">
+          <section class="grafico">
+            <h2>Atendimentos por dia</h2>
+            <p class="apoio" id="grafico-dia-resumo"></p>
+            <div class="barras" id="grafico-dia" role="img"></div>
+            <div class="eixo" id="grafico-dia-eixo"></div>
+          </section>
+          <section class="grafico">
+            <h2>Horários de pico</h2>
+            <p class="apoio" id="grafico-hora-resumo"></p>
+            <div class="barras" id="grafico-hora" role="img"></div>
+            <div class="eixo" id="grafico-hora-eixo"></div>
+          </section>
+        </div>
+        <div class="dica-grafico" id="dica-grafico" hidden></div>
+      </div>
+
+      <div id="pagina-ajustes" class="pagina" hidden>
+        <div class="secao">
+          <h2>Usuários da equipe</h2>
+          <p class="apoio" id="ajustes-aviso"></p>
+        </div>
+        <div class="tabela-rolagem">
+          <table id="tabela-usuarios">
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Acesso</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conversa aberta a partir de um card -->
+    <div id="gaveta-fundo" class="gaveta-fundo" hidden></div>
+    <aside id="gaveta" class="gaveta" hidden aria-label="Conversa">
+      <header>
+        <span class="avatar" id="gaveta-avatar"></span>
+        <div class="quem">
+          <strong id="gaveta-nome"></strong>
+          <span id="gaveta-telefone"></span>
+        </div>
+        <span id="gaveta-etapa" class="etapa"></span>
+        <button type="button" class="fechar" id="gaveta-fechar" aria-label="Fechar conversa">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>
+        </button>
+      </header>
+      <div class="mensagens" id="gaveta-mensagens"></div>
+      <p class="nota-gaveta">Somente leitura. As respostas são enviadas pelo GPT Maker.</p>
+    </aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
