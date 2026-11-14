@@ -181,7 +181,7 @@ const ETAPAS = [
   ["convertido", "Leads convertidos", "var(--ciano)"],
   ["bot_atendendo", "Bot atendendo", "var(--verde)"],
   ["aguardando_humano", "Aguardando humano", "var(--dourado)"],
-  ["humano_atendendo", "Humano atendendo", "#8ab4f8"],
+  ["humano_atendendo", "Humano atendendo", "var(--azul)"],
   ["finalizado", "Finalizado", "var(--neutro)"],
 ];
 

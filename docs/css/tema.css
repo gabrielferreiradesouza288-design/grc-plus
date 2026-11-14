@@ -1,0 +1,284 @@
+/* GRC + · Tema do CRM: faixa escura só no topo, resto claro com bordas marcadas e hover verde.
+   Carregado depois de estilo.css; a tela de login continua escura. */
+
+:root { --neon: #39ff14; --azul: #8ab4f8; }
+
+/* Marca: GRC em branco, "+" em verde neon */
+.marca { color: #fff; }
+.marca span { color: var(--neon); text-shadow: 0 0 14px rgba(57, 255, 20, 0.45); }
+.caixa .marca { font-size: 26px; }
+.marca-grande { font-size: 44px; letter-spacing: 0.05em; }
+
+/* ------------------------------------------------------------------ */
+/* Cores do tema claro (valem para tudo dentro do CRM)                  */
+/* ------------------------------------------------------------------ */
+.app {
+  color-scheme: light;
+  --fundo: #ffffff;
+  --painel: #ffffff;
+  --elevado: #ffffff;
+  --realce: #e8f8ef;
+  --linha: #d2dad6;
+  --linha-forte: #aeb9b4;
+  --texto: #0e1512;
+  --texto-2: #36413d;
+  --mudo: #5f6b66;
+  --neutro: #86918c;
+  --ciano: #0b9c66;            /* verde de destaque (botões, item ativo, gráficos) */
+  --ciano-tinta: #ffffff;
+  --ciano-suave: rgba(11, 156, 102, 0.1);
+  --verde: #16a34a;
+  --dourado: #b7791f;
+  --vermelho: #d14343;
+  --azul: #2f6fed;
+  --hover: #e6f8ee;            /* verde leve ao passar o mouse */
+  --hover-borda: #57c98f;
+  --hover-texto: #0a6b47;
+  background: var(--fundo);
+  color: var(--texto);
+  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+/* A lateral e o conteúdo deixam de ser caixas: seus filhos entram direto na grade,
+   o que permite a faixa escura atravessar a tela inteira no topo. */
+.lateral, .conteudo { display: contents; }
+
+/* ------------------------------------------------------------------ */
+/* Faixa escura do topo: marca + título e filtros                       */
+/* ------------------------------------------------------------------ */
+.topo-lateral, .barra {
+  color-scheme: dark;
+  --fundo: #08090a;
+  --painel: #121416;
+  --elevado: #16181b;
+  --realce: #1d2024;
+  --linha: rgba(255, 255, 255, 0.1);
+  --linha-forte: rgba(255, 255, 255, 0.2);
+  --texto: #f4f5f6;
+  --texto-2: #c3c8cf;
+  --mudo: #9097a0;
+  --ciano: var(--neon);
+  --ciano-tinta: #021918;
+  --verde: #39ff14;
+  background: #08090a;
+  color: var(--texto);
+  border: 0;
+  margin: 0;
+}
+.topo-lateral { grid-column: 1; grid-row: 1; display: flex; align-items: center; padding: 0 24px; }
+.topo-lateral .marca { font-size: 38px; letter-spacing: 0.04em; line-height: 1; }
+.barra { grid-column: 2; grid-row: 1; align-items: center; padding: 20px 28px; }
+.barra .sobretitulo { color: var(--neon); }
+.barra .sobretitulo > span:first-child { background: var(--neon); }
+.barra .busca:focus-within, .barra .periodo select:focus, .barra .periodo input[type="date"]:focus { border-color: var(--neon); }
+.barra .periodo.filtrando select { border-color: rgba(57, 255, 20, 0.6); }
+
+/* ------------------------------------------------------------------ */
+/* Menu lateral                                                         */
+/* ------------------------------------------------------------------ */
+.lateral nav { grid-column: 1; grid-row: 2; align-content: start; gap: 4px; padding: 16px 12px; background: #fff; border-right: 1px solid var(--linha-forte); overflow-y: auto; }
+.app .lateral nav button { color: var(--texto-2); border: 1px solid transparent; padding: 9px 11px; font-size: 13.5px; }
+.app .lateral nav button:hover { background: var(--hover); border-color: var(--hover-borda); color: var(--hover-texto); }
+.app .lateral nav button.ativo { background: var(--hover); border-color: var(--hover-borda); color: var(--hover-texto); }
+.app .lateral nav button.ativo svg { color: var(--ciano); }
+.app .lateral nav button.ativo::before { left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--ciano); }
+
+.usuario { grid-column: 1; grid-row: 3; margin: 0; padding: 12px 18px; background: #fff; border-top: 1px solid var(--linha-forte); border-right: 1px solid var(--linha-forte); }
+.app .sair:hover, .app .fechar:hover { background: var(--hover); color: var(--hover-texto); }
+.app .avatar { background: #eef3f0; border-color: var(--linha-forte); color: var(--texto-2); }
+
+/* ------------------------------------------------------------------ */
+/* Páginas                                                              */
+/* ------------------------------------------------------------------ */
+.pagina { grid-column: 2; grid-row: 2 / span 2; overflow-y: auto; min-height: 0; background: var(--fundo); }
+.pagina.entrada { overflow: hidden; }
+
+/* Blocos ("tópicos") com borda bem visível e verde leve ao passar o mouse */
+.app .indicadores, .app .tile, .app .grafico, .app .tabela-rolagem, .app .resumo-ficha, .app .cartao-form, .app .frete-form {
+  border: 1px solid var(--linha-forte); box-shadow: 0 1px 2px rgba(14, 21, 18, 0.05);
+}
+.app .indicador { border-color: var(--linha-forte); transition: background 0.15s; }
+.app .indicador:hover { background: var(--hover); }
+.app .indicador:first-child { border-radius: 7px 0 0 7px; }
+.app .indicador:last-child { border-radius: 0 7px 7px 0; }
+.app .tile, .app .grafico { transition: background 0.15s, border-color 0.15s; }
+.app .tile:hover, .app .grafico:hover { background: var(--hover); border-color: var(--hover-borda); }
+.app .resumo-ficha > div { border-color: var(--linha-forte); }
+
+/* Funil */
+.app .coluna h2 { color: var(--texto); font-weight: 700; }
+.app .coluna h2 span { background: #e7ece9; color: var(--texto-2); }
+.app .coluna .cards { background: #f5f8f6; border: 1px solid var(--linha-forte); transition: border-color 0.15s, background 0.15s; }
+.app .coluna:hover .cards { border-color: var(--hover-borda); background: #eff9f3; }
+.app .card { border: 1px solid var(--linha-forte); box-shadow: 0 1px 2px rgba(14, 21, 18, 0.06); }
+.app .card:hover, .app .card:disabled:hover { background: var(--hover); border-color: var(--hover-borda); }
+.app .card.alerta { background: #fff7e6; border-color: #dba63f; }
+.app .card.alerta:hover { background: var(--hover); border-color: var(--hover-borda); }
+
+/* Listas (Conversas, Contatos, Clientes) */
+.app .entrada-lista { border-right: 1px solid var(--linha-forte); }
+.app .item { border-bottom: 1px solid var(--linha); }
+.app .item:hover { background: var(--hover); }
+.app .item.ativo { background: #d9f3e4; }
+.app .item .avatar i { border-color: #fff; }
+.app .filtros button:hover { background: var(--hover); color: var(--hover-texto); }
+.app .filtros button.ativo { background: var(--hover); border-color: var(--hover-borda); color: var(--hover-texto); }
+.app .chip { background: #f1f5f3; }
+.app .chip button:hover { background: #d9f3e4; color: var(--hover-texto); }
+
+/* Botões e campos */
+.app .botao { background: #fff; border-color: var(--linha-forte); color: var(--texto); }
+.app .botao:hover { background: var(--hover); border-color: var(--hover-borda); color: var(--hover-texto); }
+.app .botao.principal, .app .botao.destaque { background: var(--ciano); border-color: var(--ciano); color: #fff; }
+.app .botao.principal:hover, .app .botao.destaque:hover { background: #087f53; border-color: #087f53; color: #fff; }
+.app .botao.perigo { color: #b42323; }
+.app .botao.perigo:hover { background: #fdecec; border-color: #e58c8c; color: #b42323; }
+.app .pagina input[type="text"], .app .pagina input[type="email"], .app .pagina input[type="date"], .app .pagina select, .app .pagina textarea { background: #fff; border-color: var(--linha-forte); }
+.app .pagina input[type="text"]:hover, .app .pagina input[type="email"]:hover, .app .pagina input[type="date"]:hover, .app .pagina select:hover, .app .pagina textarea:hover { border-color: var(--hover-borda); }
+.app .pagina input:focus, .app .pagina select:focus, .app .pagina textarea:focus { background: #fff; }
+.app .marcar { border-color: var(--linha-forte); }
+.app .marcar:hover { background: var(--hover); border-color: var(--hover-borda); }
+.app .aviso { color: #b42323; background: #fdecec; border-color: #f0b4b4; }
+.app .aviso.ok { color: var(--hover-texto); background: var(--hover); border-color: var(--hover-borda); }
+
+/* Tabela */
+.app th { background: #f1f5f3; color: var(--texto-2); border-bottom-color: var(--linha-forte); }
+.app tbody tr:hover td { background: var(--hover); }
+
+/* Gráficos */
+.app .pilar:hover, .app .pilar:focus-visible { background: var(--hover); }
+.app .dica-grafico { background: #0e1512; color: #fff; border: 0; box-shadow: 0 8px 24px rgba(14, 21, 18, 0.25); }
+.app .dica-grafico span { color: #b9c4be; }
+
+/* Conversa (painel e gaveta) */
+.app .gaveta-fundo { background: rgba(14, 21, 18, 0.4); }
+.app .gaveta { box-shadow: -18px 0 48px rgba(14, 21, 18, 0.18); }
+.app .mensagens { background: #f3f6f4; }
+.app .msg { border-color: var(--linha); }
+.app .msg.cliente { background: #fff; border-color: var(--linha-forte); }
+.app .msg.bot { background: #e2f6ea; border-color: #b4e2c7; }
+.app .msg.equipe { background: #e6eefe; border-color: #bcd0fa; }
+.app .msg.sistema { border: 0; }
+.app .dia { background: #fff; border-color: var(--linha-forte); }
+.app .etapa { background: #fff; }
+.app .linha-tempo li::after { background: var(--linha-forte); }
+
+.app * { scrollbar-color: #bcc6c1 transparent; }
+
+/* ------------------------------------------------------------------ */
+/* Refino da parte clara: fundo suave, blocos com profundidade,         */
+/* colunas do funil com a cor da etapa (o layout continua o mesmo)      */
+/* ------------------------------------------------------------------ */
+.app {
+  --fundo: #f2f5f3;                       /* fundo da página levemente acinzentado: os blocos brancos se destacam */
+  --linha: #dbe2de;
+  --linha-forte: #c3cdc8;
+  --sombra: 0 1px 2px rgba(14, 21, 18, 0.06), 0 6px 16px -6px rgba(14, 21, 18, 0.1);
+  --sombra-alta: 0 2px 4px rgba(14, 21, 18, 0.07), 0 14px 28px -10px rgba(11, 156, 102, 0.28);
+  --raio: 12px;
+}
+
+/* Menu lateral */
+.lateral nav, .usuario { background: #fbfcfb; }
+.lateral nav { padding-top: 20px; }
+.lateral nav::before { content: "Menu"; padding: 0 12px 8px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--neutro); }
+.app .lateral nav button { border-radius: 9px; padding: 10px 12px; font-weight: 600; transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s; }
+.app .lateral nav button.ativo { background: #fff; border-color: var(--hover-borda); color: var(--hover-texto); box-shadow: var(--sombra); font-weight: 700; }
+.app .lateral nav button.ativo::before { left: -12px; top: 8px; bottom: 8px; border-radius: 0 3px 3px 0; }
+.app .usuario .avatar { background: var(--ciano); border-color: var(--ciano); color: #fff; }
+
+/* Indicadores: bloco com profundidade e uma cor por indicador */
+.app .indicadores { border-radius: var(--raio); background: #fff; box-shadow: var(--sombra); overflow: hidden; }
+.app .indicador { position: relative; padding: 18px 20px 16px 22px; background: #fff; }
+.app .indicador::before { content: ""; position: absolute; left: 0; top: 16px; bottom: 16px; width: 4px; border-radius: 0 4px 4px 0; background: var(--marca, var(--ciano)); }
+.app .indicador:nth-child(2) { --marca: var(--dourado); }
+.app .indicador:nth-child(3) { --marca: #64748b; }
+.app .indicador:nth-child(4) { --marca: var(--azul); }
+.app .indicador .rotulo { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mudo); }
+.app .indicador .valor { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; margin-top: 4px; }
+.app .indicador:hover { background: var(--hover); }
+
+/* Colunas do funil: cabeçalho colado na coluna, com a cor da etapa no topo */
+.app .funil { gap: 16px; }
+.app .coluna h2 {
+  margin: 0; padding: 12px 14px; font-size: 13px; font-weight: 700; color: var(--texto);
+  background: #fff; border: 1px solid var(--linha-forte); border-top: 3px solid var(--cor); border-bottom: 0;
+  border-radius: var(--raio) var(--raio) 0 0;
+}
+.app .coluna h2 i { display: none; }
+.app .coluna h2 span { min-width: 24px; padding: 2px 8px; font-weight: 700; color: var(--cor); background: color-mix(in srgb, var(--cor) 14%, #fff); }
+.app .coluna .cards { padding: 10px; gap: 10px; background: #eaefec; border-radius: 0 0 var(--raio) var(--raio); box-shadow: var(--sombra); }
+.app .coluna:hover .cards { background: #e3f3ea; border-color: var(--hover-borda); }
+.app .coluna:hover h2 { border-left-color: var(--hover-borda); border-right-color: var(--hover-borda); }
+.app .coluna .vazio { width: 100%; padding: 26px 10px; border: 1.5px dashed var(--linha-forte); border-radius: 9px; background: rgba(255, 255, 255, 0.55); color: var(--neutro); font-weight: 500; }
+.app .coluna .mais { font-weight: 600; }
+
+/* Cards: faixa na cor da etapa, sombra e leve subida ao passar o mouse */
+.app .card { padding: 12px 13px 12px 15px; border-radius: 10px; border-left: 3px solid var(--cor); box-shadow: var(--sombra); transition: background 0.15s, border-color 0.15s, box-shadow 0.2s, transform 0.2s var(--suave); }
+.app .card:hover, .app .card:disabled:hover { border-left-color: var(--cor); box-shadow: var(--sombra-alta); transform: translateY(-2px); }
+.app .card.alerta, .app .card.alerta:hover { border-left-color: var(--dourado); }
+.app .card .nome { font-weight: 700; }
+.app .card .avatar { width: 32px; height: 32px; background: color-mix(in srgb, var(--cor) 12%, #fff); border-color: color-mix(in srgb, var(--cor) 35%, #fff); color: var(--texto); }
+.app .card .rodape { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--linha); }
+
+/* Blocos brancos sobre o fundo suave */
+.app .tile, .app .grafico, .app .tabela-rolagem, .app .resumo-ficha, .app .cartao-form { background: #fff; border-radius: var(--raio); box-shadow: var(--sombra); }
+.app .tile { position: relative; padding: 18px 20px; overflow: hidden; }
+.app .tile::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--ciano); opacity: 0.85; }
+.app .tile .rotulo { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.app .tile .valor { font-weight: 800; }
+.app .tile:hover, .app .grafico:hover { box-shadow: var(--sombra-alta); }
+.app .grafico h2 { font-weight: 700; }
+.app th { padding: 12px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.app td { padding: 13px 16px; }
+.app .secao h2 { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+
+/* Listas e fichas ficam brancas, separadas do fundo */
+.app .entrada-lista, .app .entrada-conversa { background: #fff; }
+.app .topo-lista, .app .contagem, .app .filtros { background: #fbfcfb; }
+.app .painel-topo .filtros { background: none; }
+.app .item { transition: background 0.15s; }
+.app .item.ativo::before { width: 3px; }
+.app .item .nome { font-weight: 700; }
+.app .ficha header, .app .conversa header { background: #fbfcfb; }
+.app .ficha-corpo h2 { color: var(--texto-2); font-weight: 700; }
+.app .nota-gaveta { background: #fbfcfb; }
+
+/* Botões e campos com cantos e foco mais cuidados */
+.app .botao { border-radius: 8px; font-weight: 700; box-shadow: 0 1px 1px rgba(14, 21, 18, 0.04); }
+.app .botao.principal, .app .botao.destaque { box-shadow: 0 1px 2px rgba(11, 156, 102, 0.35); }
+.app .pagina input[type="text"], .app .pagina input[type="email"], .app .pagina input[type="date"], .app .pagina select, .app .pagina textarea { border-radius: 8px; }
+.app .pagina input:focus, .app .pagina select:focus, .app .pagina textarea:focus { box-shadow: 0 0 0 3px rgba(11, 156, 102, 0.16); }
+.app .etapa { font-weight: 700; border-color: var(--linha-forte); }
+
+/* ------------------------------------------------------------------ */
+/* Celular                                                              */
+/* ------------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr); }
+  .topo-lateral { grid-column: 1; grid-row: 1; padding: 14px 16px 6px; }
+  .topo-lateral .marca { font-size: 26px; }
+  .usuario {
+    grid-column: 2; grid-row: 1; padding: 10px 12px 2px; background: #08090a; border: 0; color: #f4f5f6;
+    --texto: #f4f5f6; --mudo: #9097a0; --linha-forte: rgba(255, 255, 255, 0.2); --hover: rgba(255, 255, 255, 0.1); --hover-texto: #fff;
+  }
+  .app .usuario .avatar { background: #1d2024; border-color: rgba(255, 255, 255, 0.2); color: #c3c8cf; }
+  .barra { grid-column: 1 / -1; grid-row: 2; padding: 8px 16px 14px; }
+  .pagina { grid-column: 1 / -1; grid-row: 3; padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
+  .pagina.entrada { padding-bottom: calc(62px + env(safe-area-inset-bottom)); }
+  .app:has(.pagina.entrada.com-conversa:not([hidden])) .barra { display: none; }
+
+  .lateral nav { grid-column: auto; grid-row: auto; background: rgba(255, 255, 255, 0.97); border-right: 0; border-top: 1px solid var(--linha-forte); padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); overflow: visible; }
+  .app .lateral nav button { border: 0; padding: 6px 2px; font-size: 10px; }
+  .app .lateral nav button:hover { background: none; }
+  .app .lateral nav button.ativo { background: none; color: var(--ciano); }
+  .app .indicador:first-child, .app .indicador:last-child { border-radius: 0; }
+  .app .indicador { padding: 14px 14px 12px 18px; }
+  .app .indicador .valor { font-size: 24px; }
+  .lateral nav::before { display: none; }
+  .lateral nav { padding-top: 6px; }
+  .app .lateral nav button.ativo { box-shadow: none; }
+  .app .funil { gap: 10px; }
+  .app .entrada-lista { border-right: 0; }
+}

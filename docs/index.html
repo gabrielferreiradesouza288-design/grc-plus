@@ -10,14 +10,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=6">
+  <link rel="stylesheet" href="css/estilo.css?v=7">
+  <link rel="stylesheet" href="css/tema.css?v=7">
 </head>
 <body class="em-acesso">
 
   <!-- Painel da marca (aparece ao lado do login, cadastro e pendente) -->
   <aside id="painel-marca" class="painel-marca" aria-hidden="true">
     <div class="grade"></div>
-    <img class="logo" src="img/grc-logo.png" alt="" onerror="this.remove()">
+    <div class="marca marca-grande">GRC <span>+</span></div>
     <div class="chamada">
       <p class="sobretitulo"><span></span>CRM de atendimentos</p>
       <p class="titulo-marca">Cada conversa do WhatsApp, <strong>acompanhada em tempo real.</strong></p>
@@ -129,7 +130,6 @@
   <div id="tela-app" class="app" hidden>
     <aside class="lateral">
       <div class="topo-lateral">
-        <img src="img/grc-logo.png" alt="" onerror="this.remove()">
         <div class="marca">GRC <span>+</span></div>
       </div>
 
@@ -463,6 +463,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>
