@@ -179,7 +179,7 @@ const PAGINAS = {
 
 const ETAPAS = [
   ["convertido", "Leads convertidos", "var(--ciano)"],
-  ["bot_atendendo", "Bot atendendo", "var(--verde)"],
+  ["bot_atendendo", "Bot atendendo", "var(--bot, var(--verde))"],
   ["aguardando_humano", "Aguardando humano", "var(--dourado)"],
   ["humano_atendendo", "Humano atendendo", "var(--azul)"],
   ["finalizado", "Finalizado", "var(--neutro)"],

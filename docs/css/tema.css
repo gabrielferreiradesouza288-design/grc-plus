@@ -253,6 +253,103 @@
 .app .etapa { font-weight: 700; border-color: var(--linha-forte); }
 
 /* ------------------------------------------------------------------ */
+/* Cores vivas: uma cor por seção e por etapa, ícones com moldura,      */
+/* cards e colunas mais marcados (o layout continua o mesmo)            */
+/* ------------------------------------------------------------------ */
+.app {
+  --ciano: #00a86b;           /* verde principal, mais vivo */
+  --verde: #12b76a;
+  --bot: #0891b2;             /* etapa "Bot atendendo" */
+  --dourado: #e08600;
+  --azul: #2563eb;
+  --vermelho: #e5484d;
+  --neutro: #6b7785;
+  --hover: #dff7ea;
+  --hover-borda: #34c98a;
+  --hover-texto: #046c4a;
+  --fundo: #eef2f1;
+  --linha-forte: #b9c5c0;
+  --sombra: 0 1px 2px rgba(14, 21, 18, 0.08), 0 8px 20px -8px rgba(14, 21, 18, 0.16);
+  --sombra-alta: 0 3px 6px rgba(14, 21, 18, 0.08), 0 18px 34px -12px color-mix(in srgb, var(--cor, var(--ciano)) 55%, transparent);
+}
+
+/* Menu: cada seção tem a sua cor e o ícone fica dentro de uma moldura */
+.lateral nav button[data-pagina="funil"]     { --ic: #00a86b; }
+.lateral nav button[data-pagina="conversas"] { --ic: #2563eb; }
+.lateral nav button[data-pagina="contatos"]  { --ic: #7c3aed; }
+.lateral nav button[data-pagina="clientes"]  { --ic: #ea580c; }
+.lateral nav button[data-pagina="painel"]    { --ic: #db2777; }
+.lateral nav button[data-pagina="ajustes"]   { --ic: #475569; }
+.app .lateral nav { gap: 6px; }
+.app .lateral nav button { gap: 12px; padding: 7px 10px 7px 8px; color: var(--texto); font-weight: 700; }
+.app .lateral nav button svg {
+  width: 34px; height: 34px; padding: 7px; border-radius: 10px; stroke-width: 1.700;
+  color: var(--ic); background: color-mix(in srgb, var(--ic) 10%, #fff); border: 1.5px solid color-mix(in srgb, var(--ic) 45%, #fff);
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.app .lateral nav button:hover { background: color-mix(in srgb, var(--ic) 9%, #fff); border-color: color-mix(in srgb, var(--ic) 45%, #fff); color: var(--texto); }
+.app .lateral nav button:hover svg { border-color: var(--ic); }
+.app .lateral nav button.ativo { background: color-mix(in srgb, var(--ic) 11%, #fff); border-color: color-mix(in srgb, var(--ic) 55%, #fff); color: var(--texto); box-shadow: var(--sombra); }
+.app .lateral nav button.ativo svg { color: #fff; background: var(--ic); border-color: var(--ic); box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--ic) 70%, transparent); }
+.app .lateral nav button.ativo::before { background: var(--ic); width: 4px; }
+
+/* Indicadores: fundo e número na cor de cada um */
+.app .indicador { background: color-mix(in srgb, var(--marca, var(--ciano)) 7%, #fff); }
+.app .indicador::before { width: 5px; top: 14px; bottom: 14px; }
+.app .indicador:nth-child(3) { --marca: #7c3aed; }
+.app .indicador .rotulo { color: color-mix(in srgb, var(--marca, var(--ciano)) 75%, #0e1512); }
+.app .indicador .valor { color: var(--texto); font-size: 32px; }
+.app .indicador.atencao .valor { color: var(--dourado); }
+.app .indicador:hover { background: color-mix(in srgb, var(--marca, var(--ciano)) 14%, #fff); }
+.app .indicadores { border-color: var(--linha-forte); }
+
+/* Colunas do funil: cabeçalho preenchido com a cor da etapa */
+.app .coluna h2 { background: var(--cor); border-color: var(--cor); border-top-width: 1px; color: #fff; padding: 13px 14px; letter-spacing: 0.01em; }
+.app .coluna h2 span { background: #fff; color: var(--cor); font-weight: 800; }
+.app .coluna .cards { background: color-mix(in srgb, var(--cor) 8%, #f4f7f6); border-color: color-mix(in srgb, var(--cor) 45%, #fff); border-top: 0; }
+.app .coluna:hover .cards { background: color-mix(in srgb, var(--cor) 14%, #f4f7f6); border-color: var(--cor); }
+.app .coluna:hover h2 { border-color: var(--cor); }
+.app .coluna .vazio { border-color: color-mix(in srgb, var(--cor) 45%, #fff); background: rgba(255, 255, 255, 0.7); color: var(--mudo); }
+
+/* Cards bem marcados */
+.app .card { border: 1.5px solid color-mix(in srgb, var(--cor) 40%, #fff); border-left: 5px solid var(--cor); background: #fff; }
+.app .card:hover, .app .card:disabled:hover { background: #fff; border-color: var(--cor); border-left-color: var(--cor); }
+.app .card.alerta { background: #fff6e0; border-color: color-mix(in srgb, var(--dourado) 60%, #fff); border-left-color: var(--dourado); }
+.app .card.alerta:hover { background: #fff1cf; border-color: var(--dourado); }
+.app .card .nome { font-size: 14px; font-weight: 800; }
+.app .card .avatar { background: var(--cor); border-color: var(--cor); color: #fff; }
+.app .card .linha { color: var(--texto-2); }
+.app .card .nao-lidas { background: var(--vermelho); color: #fff; }
+
+/* Cartões do Painel: uma cor por cartão */
+.app .tile { --marca: var(--ciano); border-color: var(--linha-forte); }
+.app .tile:nth-child(2) { --marca: #2563eb; }
+.app .tile:nth-child(3) { --marca: #7c3aed; }
+.app .tile:nth-child(4) { --marca: #e08600; }
+.app .tile:nth-child(5) { --marca: #db2777; }
+.app .tile:nth-child(6) { --marca: #e5484d; }
+.app .tile::before { height: 5px; background: var(--marca); opacity: 1; }
+.app .tile .rotulo { color: color-mix(in srgb, var(--marca) 75%, #0e1512); }
+.app .tile:hover { background: color-mix(in srgb, var(--marca) 8%, #fff); border-color: var(--marca); }
+.app .grafico { border-color: var(--linha-forte); }
+.app .pilar i { background: linear-gradient(#12c98a, #00a86b); opacity: 0.9; }
+
+/* Listas: avatar colorido e item ativo mais marcado */
+.app .item .avatar { background: color-mix(in srgb, var(--ciano) 12%, #fff); border-color: color-mix(in srgb, var(--ciano) 45%, #fff); color: var(--hover-texto); }
+.app .item.ativo { background: var(--hover); }
+.app .item.ativo .avatar { background: var(--ciano); border-color: var(--ciano); color: #fff; }
+.app .item.ativo::before { width: 4px; }
+.app .item .nao-lidas { background: var(--vermelho); color: #fff; }
+.app .filtros button.ativo { background: var(--ciano); border-color: var(--ciano); color: #fff; }
+
+/* Botões principais mais vivos */
+.app .botao.principal, .app .botao.destaque { background: linear-gradient(#0cc07f, #00a86b); border-color: #00985f; box-shadow: 0 2px 6px -1px rgba(0, 168, 107, 0.5); }
+.app .botao.principal:hover, .app .botao.destaque:hover { background: linear-gradient(#0ab274, #00955e); border-color: #00804f; }
+.app th { background: #e9efec; color: var(--texto); }
+.app .tabela-rolagem, .app .resumo-ficha, .app .cartao-form { border-color: var(--linha-forte); }
+.app .usuario .avatar { background: linear-gradient(#0cc07f, #00a86b); border-color: #00985f; }
+
+/* ------------------------------------------------------------------ */
 /* Ajuda                                                                */
 /* ------------------------------------------------------------------ */
 .botao-ajuda { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 6px; cursor: pointer;
@@ -314,6 +411,10 @@
   .app .indicador { padding: 14px 14px 12px 18px; }
   .app .indicador .valor { font-size: 24px; }
   .botao-ajuda { height: 40px; }
+  .app .lateral nav button { gap: 3px; padding: 5px 2px; font-size: 10px; box-shadow: none; }
+  .app .lateral nav button svg { width: 30px; height: 30px; padding: 6px; border-radius: 9px; }
+  .app .lateral nav button.ativo { color: var(--ic); }
+  .app .indicador .valor { font-size: 26px; }
   .lateral nav::before { display: none; }
   .lateral nav { padding-top: 6px; }
   .app .lateral nav button.ativo { box-shadow: none; }
