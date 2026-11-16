@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=7">
-  <link rel="stylesheet" href="css/tema.css?v=7">
+  <link rel="stylesheet" href="css/estilo.css?v=8">
+  <link rel="stylesheet" href="css/tema.css?v=8">
 </head>
 <body class="em-acesso">
 
@@ -193,6 +193,9 @@
             <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5"/><path d="m13 13 3.500 3.500"/></svg>
             <input type="search" id="busca-funil" placeholder="Buscar contato ou número" aria-label="Buscar contato ou número">
           </label>
+          <button type="button" class="botao-ajuda" id="ajuda-abrir" aria-haspopup="dialog">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.500"/><path d="M7.800 8a2.300 2.300 0 1 1 3.400 2c-.800.500-1.200 1-1.200 1.800"/><path d="M10 14.300v.100"/></svg>Ajuda
+          </button>
         </div>
       </header>
 
@@ -444,6 +447,27 @@
     </section>
 
     <!-- Conversa aberta a partir de um card -->
+    <!-- Ajuda: perguntas com passo a passo -->
+    <div id="ajuda-fundo" class="gaveta-fundo" hidden></div>
+    <aside id="ajuda" class="gaveta ajuda" role="dialog" aria-modal="true" aria-labelledby="ajuda-titulo" hidden>
+      <header>
+        <div class="quem">
+          <strong id="ajuda-titulo">Ajuda</strong>
+          <span>Escolha uma pergunta para ver o passo a passo</span>
+        </div>
+        <button type="button" class="fechar" id="ajuda-fechar" aria-label="Fechar ajuda">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>
+        </button>
+      </header>
+      <div class="ajuda-busca">
+        <label class="busca">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5"/><path d="m13 13 3.500 3.500"/></svg>
+          <input type="search" id="ajuda-filtro" placeholder="Buscar na ajuda" aria-label="Buscar na ajuda">
+        </label>
+      </div>
+      <div class="ajuda-lista" id="ajuda-lista"></div>
+    </aside>
+
     <div id="gaveta-fundo" class="gaveta-fundo" hidden></div>
     <aside id="gaveta" class="gaveta" hidden aria-label="Conversa">
       <header>
@@ -463,6 +487,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>

@@ -1274,6 +1274,201 @@ function botaoUsuario(rotulo, usuario, mudanca) {
 }
 
 // ---------------------------------------------------------------------------
+// Ajuda: perguntas com passo a passo. Cada pessoa vê só o que o seu usuário pode fazer.
+// "requer" é uma permissão (ou "mestre"); "pagina" cria o botão que leva direto à tela.
+// Nos textos, **assim** vira negrito.
+// ---------------------------------------------------------------------------
+const AJUDA = [
+  { grupo: "Atendimento" },
+  { pergunta: "Como ver quem está esperando um atendente?", requer: "funil", pagina: "funil", passos: [
+    "Abra **Funil** no menu.",
+    "Olhe a coluna **Aguardando humano**: cada cartão é um cliente que pediu atendimento e ainda não foi assumido.",
+    "O cartão mostra **Esperando há X min**. Quem espera há mais tempo fica no topo.",
+    "O número em **Aguardando humano**, no alto da tela, mostra quantos estão na fila agora.",
+  ], dica: "A tela se atualiza sozinha. O selo \"Ao vivo\", no topo, indica que a conexão está ativa." },
+  { pergunta: "Como abrir e ler uma conversa?", requer: "mensagens", pagina: "conversas", passos: [
+    "No **Funil**, clique no cartão do cliente. A conversa abre na lateral.",
+    "Ou abra **Conversas** no menu e clique no nome do cliente na lista da esquerda.",
+    "As mensagens do cliente ficam à esquerda; as do bot e da equipe, à direita.",
+    "Para fechar, clique no **X** ou fora da conversa.",
+  ] },
+  { pergunta: "Como responder um cliente?", passos: [
+    "O GRC + é só para acompanhar: ele **não envia mensagens**.",
+    "Para responder, abra o **GPT Maker** e assuma o atendimento por lá.",
+    "Assim que você responder, a mensagem aparece aqui no GRC + sozinha.",
+  ] },
+  { pergunta: "Como procurar um cliente ou filtrar por data?", requer: "funil", pagina: "funil", passos: [
+    "No topo da tela, digite o nome ou o número em **Buscar contato ou número**.",
+    "Para filtrar por data, clique em **Todo o período** e escolha Hoje, Ontem, Últimos 7 dias ou Últimos 30 dias.",
+    "Para um intervalo específico, escolha **Escolher datas…** e informe a data inicial e a final.",
+    "Para voltar a ver tudo, selecione **Todo o período** e apague a busca.",
+  ], dica: "A data considerada é a da última mensagem da conversa. A busca e o filtro valem no Funil e em Conversas." },
+  { pergunta: "O que significa cada coluna do Funil?", requer: "funil", pagina: "funil", passos: [
+    "**Leads convertidos**: conversa finalizada de um cliente que a equipe já cadastrou em Clientes.",
+    "**Bot atendendo**: o robô está conversando com o cliente.",
+    "**Aguardando humano**: o cliente pediu um atendente e ninguém assumiu ainda.",
+    "**Humano atendendo**: alguém da equipe assumiu a conversa no GPT Maker.",
+    "**Finalizado**: atendimento encerrado, de quem ainda não é cliente cadastrado.",
+  ] },
+
+  { grupo: "Clientes" },
+  { pergunta: "Como cadastrar novos clientes?", requer: "editar_clientes", pagina: "clientes", passos: [
+    "Abra **Clientes** no menu.",
+    "Clique em **+ Novo cliente**.",
+    "Preencha o **nome ou razão social** (obrigatório), o CNPJ, o endereço, a pessoa de contato, o telefone e o e-mail.",
+    "Clique em **Salvar cliente**.",
+  ], dica: "Atalho: abra a conversa do cliente e clique em \"Cadastrar como cliente\". O cadastro já vem com a pessoa de contato e o telefone preenchidos." },
+  { pergunta: "Como fazer um lead aparecer em \"Leads convertidos\"?", requer: "editar_clientes", pagina: "funil", passos: [
+    "Finalize o atendimento no **GPT Maker**. A conversa vai para a coluna **Finalizado**.",
+    "No Funil, clique no cartão do cliente para abrir a conversa.",
+    "Clique em **Cadastrar como cliente**, no rodapé da conversa.",
+    "Complete os dados e clique em **Salvar cliente**.",
+    "Pronto: a conversa passa sozinha para **Leads convertidos**.",
+  ], dica: "Se cadastrar pela guia Clientes, use o mesmo telefone do WhatsApp para o sistema ligar o cliente à conversa." },
+  { pergunta: "Como alterar ou excluir um cliente?", requer: "editar_clientes", pagina: "clientes", passos: [
+    "Abra **Clientes** e clique no cliente na lista.",
+    "Para alterar, mude os campos e clique em **Salvar cliente**.",
+    "Para excluir, clique em **Excluir cliente** e depois em **Confirmar exclusão**.",
+  ], dica: "Ao excluir um cliente, a conversa dele volta da coluna Leads convertidos para Finalizado." },
+  { pergunta: "Como procurar um cliente cadastrado?", requer: "clientes", pagina: "clientes", passos: [
+    "Abra **Clientes** no menu.",
+    "Digite no campo de busca do topo: vale nome, CNPJ, pessoa de contato, endereço ou telefone.",
+    "Clique no cliente para ver todos os dados.",
+  ] },
+
+  { grupo: "Contatos do WhatsApp" },
+  { pergunta: "Como ver o histórico de um contato?", requer: "contatos", pagina: "contatos", passos: [
+    "Abra **Contatos** no menu e clique no nome da pessoa.",
+    "No alto da ficha aparecem o primeiro contato, o total de atendimentos e a última mensagem.",
+    "Em **Linha do tempo** estão todos os atendimentos, com protocolo, data, duração e quem atendeu.",
+    "Clique em **Ver conversa** para ler as mensagens.",
+  ] },
+  { pergunta: "Como colocar etiquetas e anotações em um contato?", requer: "editar_contatos", pagina: "contatos", passos: [
+    "Abra **Contatos** e clique no nome da pessoa.",
+    "Em **Etiquetas**, digite o texto (por exemplo, Orçamento) e clique em **Adicionar**. Para remover, clique no **×** da etiqueta.",
+    "Em **Anotações internas**, escreva o que quiser e clique em **Salvar anotações**.",
+  ], dica: "Etiquetas e anotações ficam só no GRC +. O cliente não vê e elas não vão para o GPT Maker." },
+
+  { grupo: "Indicadores" },
+  { pergunta: "Como ver os números do atendimento?", requer: "painel", pagina: "painel", passos: [
+    "Abra **Painel** no menu.",
+    "Escolha o período: **7 dias**, **30 dias** ou **90 dias**.",
+    "Os cartões mostram atendimentos, novos contatos, transferências para humano, espera média e duração média.",
+    "Passe o mouse sobre uma barra dos gráficos para ver o valor exato do dia ou do horário.",
+  ] },
+
+  { grupo: "Usuários e administração" },
+  { pergunta: "Como criar um novo usuário?", requer: "mestre", pagina: "ajustes", passos: [
+    "Abra **Ajustes** no menu.",
+    "Clique em **+ Novo usuário**.",
+    "Preencha nome, e-mail e uma **senha inicial** com pelo menos 8 caracteres.",
+    "Escolha o papel e marque **o que este usuário pode fazer**.",
+    "Clique em **Criar usuário** e passe o e-mail e a senha para a pessoa.",
+  ], dica: "O usuário já nasce ativo. Ele pode trocar a senha depois usando \"Esqueci minha senha\" na tela de login." },
+  { pergunta: "Como mudar o que um usuário pode fazer?", requer: "mestre", pagina: "ajustes", passos: [
+    "Abra **Ajustes** e clique em **Editar** na linha do usuário.",
+    "Marque ou desmarque as permissões.",
+    "Clique em **Salvar alterações**.",
+  ], dica: "A pessoa precisa recarregar a página para o menu dela se atualizar." },
+  { pergunta: "Como inativar ou excluir um usuário?", requer: "mestre", pagina: "ajustes", passos: [
+    "Abra **Ajustes**.",
+    "Para tirar o acesso sem apagar, clique em **Inativar**. Para devolver, clique em **Reativar**.",
+    "Para apagar de vez, clique em **Excluir** e depois em **Confirmar exclusão**.",
+  ], dica: "O sistema não deixa ficar sem nenhum usuário mestre ativo, e ninguém consegue excluir o próprio usuário." },
+  { pergunta: "Como baixar um backup dos dados?", requer: "mestre", pagina: "ajustes", passos: [
+    "Abra **Ajustes** e desça até **Backup dos dados**.",
+    "Clique em **Baixar backup agora**.",
+    "O arquivo é salvo na pasta de downloads do seu computador.",
+  ], dica: "Além disso, todo domingo o sistema guarda uma cópia automática e mantém as 8 mais recentes." },
+
+  { grupo: "Acesso" },
+  { pergunta: "Esqueci minha senha. O que faço?", passos: [
+    "Na tela de login, clique em **Esqueci minha senha**.",
+    "Informe o seu e-mail e clique em **Enviar link**.",
+    "Abra o e-mail recebido (confira o spam) e clique no link.",
+    "Digite a nova senha duas vezes e clique em **Salvar nova senha**.",
+  ] },
+  { pergunta: "Por que não vejo algum item do menu?", passos: [
+    "O menu mostra só o que o seu usuário tem permissão para ver.",
+    "Se precisar de acesso a outra tela, peça a um **usuário mestre**.",
+    "Depois que ele liberar, recarregue a página.",
+  ] },
+  { pergunta: "Como sair do sistema?", passos: [
+    "Clique no ícone de **sair**, ao lado do seu nome, no canto inferior esquerdo (no celular, no canto superior direito).",
+  ] },
+];
+
+function podeVerAjuda(t) {
+  if (!t.requer) return true;
+  return t.requer === "mestre" ? perfil?.papel === "mestre" : pode(t.requer);
+}
+
+// Texto com **negrito**, montado sem HTML solto
+function textoComNegrito(alvo, texto) {
+  texto.split("**").forEach((parte, i) => { if (parte) alvo.append(i % 2 ? el("b", "", parte) : parte); });
+  return alvo;
+}
+
+function desenharAjuda() {
+  const termo = $("#ajuda-filtro").value.trim().toLowerCase();
+  const lista = $("#ajuda-lista");
+  lista.replaceChildren();
+  let grupoPendente = null;
+  let total = 0;
+
+  for (const t of AJUDA) {
+    if (t.grupo) { grupoPendente = t.grupo; continue; }
+    if (!podeVerAjuda(t)) continue;
+    if (termo && !(t.pergunta + " " + t.passos.join(" ") + " " + (t.dica ?? "")).toLowerCase().includes(termo)) continue;
+    if (grupoPendente) { lista.append(el("p", "grupo", grupoPendente)); grupoPendente = null; }
+
+    const topico = el("details", "topico");
+    topico.append(el("summary", "", t.pergunta));
+    const corpo = el("div", "corpo");
+    const passos = el("ol");
+    for (const p of t.passos) {
+      const passo = el("li");
+      passo.append(textoComNegrito(el("span"), p));
+      passos.append(passo);
+    }
+    corpo.append(passos);
+    if (t.dica) corpo.append(el("p", "dica", t.dica));
+    if (t.pagina && (t.pagina === "ajustes" || pode(t.pagina))) {
+      const ir = el("button", "botao", `Ir para ${PAGINAS[t.pagina][0]}`);
+      ir.type = "button";
+      ir.addEventListener("click", () => { fecharAjuda(); abrirPagina(t.pagina); });
+      corpo.append(ir);
+    }
+    topico.append(corpo);
+    // Abre um por vez, para a lista não ficar comprida
+    topico.addEventListener("toggle", () => {
+      if (topico.open) $$(".topico[open]", lista).forEach((o) => { if (o !== topico) o.open = false; });
+    });
+    if (termo) topico.open = total === 0;
+    lista.append(topico);
+    total++;
+  }
+  if (!total) lista.append(el("p", "vazio", "Nenhuma pergunta encontrada. Tente outra palavra."));
+}
+
+function abrirAjuda() {
+  $("#ajuda-filtro").value = "";
+  desenharAjuda();
+  $("#ajuda").hidden = $("#ajuda-fundo").hidden = false;
+  $("#ajuda-fechar").focus();
+}
+function fecharAjuda() {
+  if ($("#ajuda").hidden) return;
+  $("#ajuda").hidden = $("#ajuda-fundo").hidden = true;
+  $("#ajuda-abrir").focus();
+}
+$("#ajuda-abrir").addEventListener("click", abrirAjuda);
+$("#ajuda-fechar").addEventListener("click", fecharAjuda);
+$("#ajuda-fundo").addEventListener("click", fecharAjuda);
+$("#ajuda-filtro").addEventListener("input", desenharAjuda);
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") fecharAjuda(); });
+
+// ---------------------------------------------------------------------------
 // Início
 // ---------------------------------------------------------------------------
 sb.auth.onAuthStateChange((evento) => {

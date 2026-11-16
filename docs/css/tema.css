@@ -253,6 +253,43 @@
 .app .etapa { font-weight: 700; border-color: var(--linha-forte); }
 
 /* ------------------------------------------------------------------ */
+/* Ajuda                                                                */
+/* ------------------------------------------------------------------ */
+.botao-ajuda { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 6px; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 700; color: #021918; background: var(--neon); border: 1px solid var(--neon); transition: filter 0.15s, box-shadow 0.15s; }
+.botao-ajuda svg { width: 16px; height: 16px; stroke-width: 1.800; }
+.botao-ajuda:hover { filter: brightness(1.08); box-shadow: 0 0 16px rgba(57, 255, 20, 0.35); }
+
+.ajuda { z-index: 12; }
+#ajuda-fundo { z-index: 11; }
+.app .ajuda header { background: #fbfcfb; }
+.ajuda .quem strong { font-size: 17px; font-weight: 800; }
+.ajuda-busca { padding: 12px 18px; border-bottom: 1px solid var(--linha); }
+.ajuda-busca .busca { width: 100%; height: 38px; background: #fff; border-color: var(--linha-forte); }
+.ajuda-busca .busca:focus-within { border-color: var(--ciano); }
+.ajuda-lista { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 18px 24px; display: flex; flex-direction: column; gap: 8px; background: var(--fundo); }
+.ajuda-lista > * { flex: none; }
+.ajuda-lista .grupo { margin: 10px 2px 2px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--neutro); }
+.ajuda-lista .grupo:first-child { margin-top: 0; }
+.ajuda-lista .vazio { color: var(--neutro); text-align: center; padding: 24px 0; }
+
+.topico { background: #fff; border: 1px solid var(--linha-forte); border-radius: 10px; box-shadow: var(--sombra); overflow: hidden; }
+.topico summary { display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer; font-weight: 700; font-size: 13.5px; list-style: none; }
+.topico summary::-webkit-details-marker { display: none; }
+.topico summary::after { content: ""; margin-left: auto; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--mudo); border-bottom: 2px solid var(--mudo); transform: rotate(45deg) translateY(-2px); transition: transform 0.2s; }
+.topico[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+.topico summary:hover { background: var(--hover); color: var(--hover-texto); }
+.topico[open] { border-color: var(--hover-borda); }
+.topico[open] summary { color: var(--hover-texto); border-bottom: 1px solid var(--linha); }
+.topico .corpo { padding: 14px 16px 16px; display: grid; gap: 12px; }
+.topico ol { margin: 0; padding: 0; list-style: none; counter-reset: passo; display: grid; gap: 10px; }
+.topico li { counter-increment: passo; display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; color: var(--texto-2); line-height: 1.5; }
+.topico li::before { content: counter(passo); display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ciano); color: #fff; font-size: 12px; font-weight: 700; }
+.topico li b { color: var(--texto); }
+.topico .dica { padding: 10px 12px; border-radius: 8px; background: var(--hover); border: 1px solid #bfe6cf; color: var(--hover-texto); font-size: 12.5px; }
+.topico .botao { justify-self: start; }
+
+/* ------------------------------------------------------------------ */
 /* Celular                                                              */
 /* ------------------------------------------------------------------ */
 @media (max-width: 860px) {
@@ -276,6 +313,7 @@
   .app .indicador:first-child, .app .indicador:last-child { border-radius: 0; }
   .app .indicador { padding: 14px 14px 12px 18px; }
   .app .indicador .valor { font-size: 24px; }
+  .botao-ajuda { height: 40px; }
   .lateral nav::before { display: none; }
   .lateral nav { padding-top: 6px; }
   .app .lateral nav button.ativo { box-shadow: none; }
